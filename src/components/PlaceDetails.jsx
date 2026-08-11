@@ -54,34 +54,47 @@ export default function PlaceDetails({
   async function submitReview() {
     if (reviewLoading || !newReview.comment.trim()) return
     setReviewLoading(true)
-    haptic('light')
 
-    let userName = 'Guest'
-    if (telegramUser) {
-      const full = [telegramUser.first_name, telegramUser.last_name].filter(Boolean).join(' ')
-      userName = full || telegramUser.username || `User ${String(telegramUser.id).slice(-4)}`
-    }
+    try {
+      haptic('light')
 
-    const { error } = await supabase
-      .from('reviews')
-      .insert([{
+      let userName = 'Guest'
+      let userIdStr = null
+
+      if (telegramUser) {
+        const full = [telegramUser.first_name, telegramUser.last_name].filter(Boolean).join(' ')
+        userName = full || telegramUser.username || `User ${String(telegramUser.id).slice(-4)}`
+        userIdStr = String(telegramUser.id)
+      }
+
+      const reviewData = {
         place_id: place.id,
         rating: newReview.rating,
         comment: newReview.comment.trim(),
         user_name: userName,
-        user_id: telegramUser?.id ? String(telegramUser.id) : null
-      }])
+        user_id: userIdStr
+      }
 
-    if (error) {
-      console.error('Review error:', error)
+      const { error } = await supabase
+        .from('reviews')
+        .insert([reviewData])
+
+      if (error) {
+        console.error('Supabase review error:', error)
+        haptic('error')
+        alert(`Error: ${error.message || 'Unknown'}`)
+      } else {
+        haptic('success')
+        setNewReview({ rating: 5, comment: '' })
+        await loadReviews()
+      }
+    } catch (e) {
+      console.error('Critical review error:', e)
       haptic('error')
-      alert(lang === 'uz' ? 'Xatolik yuz berdi' : 'Произошла ошибка при отправке')
-    } else {
-      haptic('success')
-      setNewReview({ rating: 5, comment: '' })
-      loadReviews()
+      alert('Technical error. Please try again later.')
+    } finally {
+      setReviewLoading(false)
     }
-    setReviewLoading(false)
   }
 
   return (
