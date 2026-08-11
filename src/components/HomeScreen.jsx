@@ -136,13 +136,13 @@ export default function HomeScreen({
                     <div className="live-thumb" style={{ backgroundImage: `url("${item.image.startsWith('http') ? item.image : `https://xqpfrmsounqbhyiwutrg.supabase.co/storage/v1/object/public/rasmlar/${item.image}`}")` }} />
                   )}
                   <div className="live-main-info">
-                    <div className="live-top" style={{ marginBottom: '8px' }}>
+                    <div className="live-top" style={{ marginBottom: '6px' }}>
                       <span>{item.icon} {item.label}</span>
                       <b>{item.badge}</b>
                     </div>
                     <h3>{item.title}</h3>
-                    <div className="muted">{item.subtitle}</div>
-                    <div className="muted" style={{ fontSize: '11px', marginTop: '4px' }}>{item.meta}</div>
+                    <div className="muted" style={{ fontSize: '13px', fontWeight: '600' }}>{item.subtitle}</div>
+                    <div className="muted" style={{ fontSize: '11px', marginTop: '2px' }}>{item.meta}</div>
                   </div>
                 </div>
                 {item.note && item.note !== item.title && (
