@@ -109,6 +109,29 @@ const I18N = {
     km: 'км',
     meters: 'м',
     distanceUnknown: 'Расстояние неизвестно',
+    searchPlaceholder: 'Найти место, кухню, адрес…',
+    filters: 'Фильтры',
+    results: 'Найдено',
+    clearFilters: 'Сбросить всё',
+    allCategories: 'Все категории',
+    foodFilter: 'Поесть',
+    coffeeFilter: 'Кофе',
+    karaokeFilter: 'Караоке',
+    entertainmentFilter: 'Развлечения',
+    familyFilter: 'С детьми',
+    dateFilter: 'Вдвоём',
+    nightFilter: 'Ночью',
+    allBudgets: 'Любой бюджет',
+    budgetUnder100: 'до 100 тыс.',
+    budget100to300: '100–300 тыс.',
+    budgetOver300: '300+ тыс.',
+    sortBy: 'Сортировка',
+    sortRecommended: 'Сначала подходящие',
+    sortNearest: 'Ближе',
+    sortCheapest: 'Дешевле',
+    onlyOpen: 'Только открытые',
+    noFilterResults: 'Ничего не нашли. Попробуйте убрать часть фильтров.',
+    locationForNearest: 'Разрешите геолокацию для сортировки по расстоянию',
   },
   uz: {
     city: 'Farg‘ona',
@@ -216,6 +239,29 @@ const I18N = {
     km: 'km',
     meters: 'm',
     distanceUnknown: 'Masofa noma’lum',
+    searchPlaceholder: 'Joy, taom yoki manzil qidiring…',
+    filters: 'Filtrlar',
+    results: 'Topildi',
+    clearFilters: 'Hammasini tozalash',
+    allCategories: 'Barcha toifalar',
+    foodFilter: 'Ovqatlanish',
+    coffeeFilter: 'Qahva',
+    karaokeFilter: 'Karaoke',
+    entertainmentFilter: 'Ko‘ngilochar',
+    familyFilter: 'Bolalar bilan',
+    dateFilter: 'Ikki kishilik',
+    nightFilter: 'Tunda',
+    allBudgets: 'Istalgan byudjet',
+    budgetUnder100: '100 minggacha',
+    budget100to300: '100–300 ming',
+    budgetOver300: '300 ming+',
+    sortBy: 'Saralash',
+    sortRecommended: 'Eng moslari',
+    sortNearest: 'Yaqinroq',
+    sortCheapest: 'Arzonroq',
+    onlyOpen: 'Faqat ochiq joylar',
+    noFilterResults: 'Hech narsa topilmadi. Ayrim filtrlarni olib tashlang.',
+    locationForNearest: 'Masofa bo‘yicha saralash uchun geolokatsiyaga ruxsat bering',
   },
 }
 
@@ -828,6 +874,8 @@ export default function App() {
             lang={lang}
             t={t}
             userLocation={userLocation}
+            locationState={locationState}
+            onRequestLocation={requestLocation}
             onOpen={openPlace}
           />
         )}
@@ -1116,40 +1164,295 @@ function PlaceDetails({ place, events, offers, lang, t, userLocation, onLanguage
   )
 }
 
-function Places({ places, loading, lang, t, userLocation, onOpen }) {
+function Places({
+  places,
+  loading,
+  lang,
+  t,
+  userLocation,
+  locationState,
+  onRequestLocation,
+  onOpen,
+}) {
+  const [query, setQuery] = useState('')
   const [openOnly, setOpenOnly] = useState(true)
+  const [categoryFilter, setCategoryFilter] = useState('all')
+  const [budgetFilter, setBudgetFilter] = useState('all')
+  const [sortMode, setSortMode] = useState('recommended')
+
+  const categoryOptions = [
+    ['all', t.allCategories],
+    ['food', t.foodFilter],
+    ['coffee', t.coffeeFilter],
+    ['karaoke', t.karaokeFilter],
+    ['entertainment', t.entertainmentFilter],
+    ['family', t.familyFilter],
+    ['date', t.dateFilter],
+    ['night', t.nightFilter],
+  ]
+
+  const budgetOptions = [
+    ['all', t.allBudgets],
+    ['under100', t.budgetUnder100],
+    ['100to300', t.budget100to300],
+    ['over300', t.budgetOver300],
+  ]
+
+  function matchesCategory(place) {
+    if (categoryFilter === 'all') return true
+
+    const tags = Array.isArray(place.tags) ? place.tags : []
+    const category = String(place.category || '').toLowerCase()
+
+    if (categoryFilter === 'food') {
+      return ['restaurant', 'cafe'].includes(category)
+        || TAG_ALIASES.eat.some((tag) => tags.includes(tag))
+    }
+
+    if (categoryFilter === 'coffee') {
+      return category === 'coffee'
+        || TAG_ALIASES.coffee.some((tag) => tags.includes(tag))
+    }
+
+    if (categoryFilter === 'karaoke') {
+      return category === 'karaoke'
+        || TAG_ALIASES.karaoke.some((tag) => tags.includes(tag))
+    }
+
+    if (categoryFilter === 'entertainment') {
+      return category === 'entertainment'
+        || TAG_ALIASES.entertainment.some((tag) => tags.includes(tag))
+    }
+
+    if (categoryFilter === 'family') {
+      return TAG_ALIASES.kids.some((tag) => tags.includes(tag))
+    }
+
+    if (categoryFilter === 'date') {
+      return TAG_ALIASES.date.some((tag) => tags.includes(tag))
+    }
+
+    if (categoryFilter === 'night') {
+      return TAG_ALIASES.night.some((tag) => tags.includes(tag))
+    }
+
+    return true
+  }
+
+  function matchesBudget(place) {
+    if (budgetFilter === 'all') return true
+    const value = Number(place.average_check)
+    if (!Number.isFinite(value) || value <= 0) return false
+
+    if (budgetFilter === 'under100') return value < 100000
+    if (budgetFilter === '100to300') return value >= 100000 && value <= 300000
+    if (budgetFilter === 'over300') return value > 300000
+
+    return true
+  }
 
   const visiblePlaces = useMemo(() => {
-    const source = openOnly
-      ? places.filter((place) => isOpenNow(place) === true)
-      : places
-    return sortPlaces(source, userLocation)
-  }, [places, openOnly, userLocation])
+    const normalizedQuery = query.trim().toLowerCase()
+
+    let result = places.filter((place) => {
+      if (openOnly && isOpenNow(place) !== true) return false
+      if (!matchesCategory(place)) return false
+      if (!matchesBudget(place)) return false
+
+      if (normalizedQuery) {
+        const haystack = [
+          localized(place, 'name', lang),
+          localized(place, 'description', lang),
+          localized(place, 'address', lang),
+          place.category,
+          ...(Array.isArray(place.tags) ? place.tags : []),
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase()
+
+        if (!haystack.includes(normalizedQuery)) return false
+      }
+
+      return true
+    })
+
+    if (sortMode === 'nearest') {
+      result = [...result].sort((a, b) => {
+        const aDistance = placeDistanceKm(a, userLocation)
+        const bDistance = placeDistanceKm(b, userLocation)
+
+        if (aDistance != null && bDistance != null) return aDistance - bDistance
+        if (aDistance != null) return -1
+        if (bDistance != null) return 1
+        return 0
+      })
+    } else if (sortMode === 'cheapest') {
+      result = [...result].sort((a, b) => {
+        const aPrice = Number(a.average_check)
+        const bPrice = Number(b.average_check)
+        const aValid = Number.isFinite(aPrice) && aPrice > 0
+        const bValid = Number.isFinite(bPrice) && bPrice > 0
+
+        if (aValid && bValid) return aPrice - bPrice
+        if (aValid) return -1
+        if (bValid) return 1
+        return 0
+      })
+    } else {
+      result = sortPlaces(result, userLocation)
+    }
+
+    return result
+  }, [
+    places,
+    query,
+    openOnly,
+    categoryFilter,
+    budgetFilter,
+    sortMode,
+    lang,
+    userLocation,
+  ])
+
+  const hasActiveFilters =
+    query.trim() ||
+    !openOnly ||
+    categoryFilter !== 'all' ||
+    budgetFilter !== 'all' ||
+    sortMode !== 'recommended'
+
+  function resetFilters() {
+    setQuery('')
+    setOpenOnly(true)
+    setCategoryFilter('all')
+    setBudgetFilter('all')
+    setSortMode('recommended')
+  }
+
+  function chooseSort(mode) {
+    if (mode === 'nearest' && !userLocation) {
+      onRequestLocation()
+    }
+    setSortMode(mode)
+  }
 
   return (
-    <section className="picker places-screen">
-      <div className="placeholder-icon">📍</div>
-      <h1>{t.places}</h1>
-      <p>{t.placesDescription}</p>
+    <section className="places-screen">
+      <div className="places-title-row">
+        <div>
+          <div className="placeholder-icon">📍</div>
+          <h1>{t.places}</h1>
+          <p>{t.placesDescription}</p>
+        </div>
+        <div className="results-count">
+          <strong>{visiblePlaces.length}</strong>
+          <span>{t.results}</span>
+        </div>
+      </div>
 
-      <div className="status-filter">
-        <button
-          className={openOnly ? 'active' : ''}
-          onClick={() => setOpenOnly(true)}
-        >
-          {t.openPlaces}
-        </button>
-        <button
-          className={!openOnly ? 'active' : ''}
-          onClick={() => setOpenOnly(false)}
-        >
-          {t.allStatus}
-        </button>
+      <div className="search-box">
+        <span>⌕</span>
+        <input
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder={t.searchPlaceholder}
+          aria-label={t.searchPlaceholder}
+        />
+        {query && (
+          <button onClick={() => setQuery('')} aria-label={t.reset}>×</button>
+        )}
+      </div>
+
+      <div className="filter-panel">
+        <div className="filter-panel-head">
+          <strong>{t.filters}</strong>
+          {hasActiveFilters && (
+            <button className="filter-reset" onClick={resetFilters}>
+              {t.clearFilters}
+            </button>
+          )}
+        </div>
+
+        <div className="filter-group">
+          <div className="filter-label">{t.mood}</div>
+          <div className="filter-scroll">
+            {categoryOptions.map(([value, label]) => (
+              <button
+                key={value}
+                className={`filter-chip ${categoryFilter === value ? 'active' : ''}`}
+                onClick={() => setCategoryFilter(value)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="filter-group">
+          <div className="filter-label">{t.budget}</div>
+          <div className="filter-scroll">
+            {budgetOptions.map(([value, label]) => (
+              <button
+                key={value}
+                className={`filter-chip ${budgetFilter === value ? 'active' : ''}`}
+                onClick={() => setBudgetFilter(value)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="filter-group">
+          <div className="filter-label">{t.sortBy}</div>
+          <div className="filter-scroll">
+            <button
+              className={`filter-chip ${sortMode === 'recommended' ? 'active' : ''}`}
+              onClick={() => chooseSort('recommended')}
+            >
+              {t.sortRecommended}
+            </button>
+            <button
+              className={`filter-chip ${sortMode === 'nearest' ? 'active' : ''}`}
+              onClick={() => chooseSort('nearest')}
+            >
+              📍 {t.sortNearest}
+            </button>
+            <button
+              className={`filter-chip ${sortMode === 'cheapest' ? 'active' : ''}`}
+              onClick={() => chooseSort('cheapest')}
+            >
+              💰 {t.sortCheapest}
+            </button>
+          </div>
+        </div>
+
+        <div className="filter-toolbar">
+          <button
+            className={`toggle-filter ${openOnly ? 'active' : ''}`}
+            onClick={() => setOpenOnly((value) => !value)}
+          >
+            <span className="toggle-dot" />
+            {t.onlyOpen}
+          </button>
+
+          <button
+            className={`near-filter ${locationState === 'active' ? 'active' : ''}`}
+            onClick={onRequestLocation}
+          >
+            📍 {locationState === 'active' ? t.locationActive : t.nearMe}
+          </button>
+        </div>
+
+        {sortMode === 'nearest' && !userLocation && (
+          <div className="filter-note">{t.locationForNearest}</div>
+        )}
       </div>
 
       {loading ? (
         <div className="muted">{t.loading}</div>
-      ) : (
+      ) : visiblePlaces.length ? (
         <div className="place-list">
           {visiblePlaces.map((place) => (
             <PlaceRow
@@ -1161,10 +1464,14 @@ function Places({ places, loading, lang, t, userLocation, onOpen }) {
               onClick={() => onOpen(place)}
             />
           ))}
-
-          {!visiblePlaces.length && (
-            <div className="muted">{t.noCategoryPlaces}</div>
-          )}
+        </div>
+      ) : (
+        <div className="empty-filter-state">
+          <div>🔎</div>
+          <strong>{t.noFilterResults}</strong>
+          <button className="text-button" onClick={resetFilters}>
+            {t.clearFilters}
+          </button>
         </div>
       )}
     </section>
