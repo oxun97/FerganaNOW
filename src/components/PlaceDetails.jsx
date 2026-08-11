@@ -68,7 +68,7 @@ export default function PlaceDetails({
       }
 
       const reviewData = {
-        place_id: place.id,
+        place_id: parseInt(place.id),
         rating: newReview.rating,
         comment: newReview.comment.trim(),
         user_name: userName,
@@ -77,21 +77,19 @@ export default function PlaceDetails({
 
       const { error } = await supabase
         .from('reviews')
-        .insert([reviewData])
+        .insert(reviewData)
 
       if (error) {
-        console.error('Supabase review error:', error)
         haptic('error')
-        alert(`Error: ${error.message || 'Unknown'}`)
+        alert(`Ошибка БД: ${error.message}`)
       } else {
         haptic('success')
         setNewReview({ rating: 5, comment: '' })
         await loadReviews()
       }
     } catch (e) {
-      console.error('Critical review error:', e)
       haptic('error')
-      alert('Technical error. Please try again later.')
+      alert(`Ошибка сети: ${e.message}`)
     } finally {
       setReviewLoading(false)
     }
