@@ -97,6 +97,11 @@ const I18N = {
     tagNight: 'Ночью',
     tagToday: 'Сегодня',
     currency: 'сум',
+    openNow: 'Открыто сейчас',
+    closedNow: 'Сейчас закрыто',
+    openPlaces: 'Открытые сейчас',
+    allStatus: 'Все',
+    openCount: 'мест открыто прямо сейчас',
   },
   uz: {
     city: 'Farg‘ona',
@@ -192,6 +197,11 @@ const I18N = {
     tagNight: 'Tunda',
     tagToday: 'Bugun',
     currency: 'so‘m',
+    openNow: 'Hozir ochiq',
+    closedNow: 'Hozir yopiq',
+    openPlaces: 'Hozir ochiq joylar',
+    allStatus: 'Barchasi',
+    openCount: 'ta joy hozir ochiq',
   },
 }
 
@@ -299,6 +309,56 @@ function activityBadge(start, end, lang, t) {
 
   if (s <= now && e >= now) return t.happeningNow
   return t.todayBadge
+}
+
+
+function ferganaMinutesNow() {
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Tashkent',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(new Date())
+
+  const hour = Number(parts.find((part) => part.type === 'hour')?.value || 0)
+  const minute = Number(parts.find((part) => part.type === 'minute')?.value || 0)
+  return hour * 60 + minute
+}
+
+function parseTimeMinutes(value) {
+  if (!value) return null
+  const [hours, minutes] = value.slice(0, 5).split(':').map(Number)
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) return null
+  return hours * 60 + minutes
+}
+
+function isOpenNow(place) {
+  const open = parseTimeMinutes(place?.open_time)
+  const close = parseTimeMinutes(place?.close_time)
+  if (open === null || close === null) return null
+
+  const now = ferganaMinutesNow()
+
+  // Одинаковое время трактуем как круглосуточную работу.
+  if (open === close) return true
+
+  // Обычный график: 09:00–23:00.
+  if (close > open) return now >= open && now < close
+
+  // Ночной график: 16:00–04:00.
+  return now >= open || now < close
+}
+
+function sortOpenFirst(items) {
+  return [...items].sort((a, b) => {
+    const aOpen = isOpenNow(a)
+    const bOpen = isOpenNow(b)
+    if (aOpen === bOpen) return 0
+    if (aOpen === true) return -1
+    if (bOpen === true) return 1
+    if (aOpen === null) return -1
+    return 1
+  })
 }
 
 function openExternal(url) {
@@ -434,13 +494,21 @@ export default function App() {
   )
 
   const filteredPlaces = useMemo(() => {
-    if (!category) return places
-    const aliases = TAG_ALIASES[category] || []
-    return places.filter((place) => {
-      const tags = Array.isArray(place.tags) ? place.tags : []
-      return aliases.some((alias) => tags.includes(alias))
-    })
+    const source = !category
+      ? places
+      : places.filter((place) => {
+          const aliases = TAG_ALIASES[category] || []
+          const tags = Array.isArray(place.tags) ? place.tags : []
+          return aliases.some((alias) => tags.includes(alias))
+        })
+
+    return sortOpenFirst(source)
   }, [places, category])
+
+  const openPlacesCount = useMemo(
+    () => places.filter((place) => isOpenNow(place) === true).length,
+    [places],
+  )
 
   const liveItems = useMemo(() => [
     ...events.map((event) => ({
@@ -519,6 +587,9 @@ export default function App() {
               <div className="eyebrow">{t.nowEyebrow}</div>
               <h1>{t.heroTitle}</h1>
               <p>{t.heroText}</p>
+              {!loading && places.length > 0 && (
+                <div className="open-summary">● {openPlacesCount} {t.openCount}</div>
+              )}
               <button className="primary" onClick={() => setTab('pick')}>
                 {t.pickMe}
               </button>
@@ -680,13 +751,21 @@ export default function App() {
 
 function PlaceRow({ place, lang, t, onClick }) {
   const [icon, label] = metaFor(place.category, t)
+  const openState = isOpenNow(place)
 
   return (
     <button className="place place-button" onClick={onClick}>
       <div className="place-icon">{icon}</div>
 
       <div className="place-body">
-        <h3>{localized(place, 'name', lang)}</h3>
+        <div className="place-title-line">
+          <h3>{localized(place, 'name', lang)}</h3>
+          {openState !== null && (
+            <span className={`open-badge ${openState ? 'is-open' : 'is-closed'}`}>
+              {openState ? t.openNow : t.closedNow}
+            </span>
+          )}
+        </div>
         <div className="muted">{localized(place, 'description', lang) || label}</div>
 
         <div className="place-meta">
@@ -710,6 +789,7 @@ function PlaceDetails({ place, events, offers, lang, t, onLanguageChange, onBack
   const instagramUrl = normalizeInstagram(place.instagram)
   const tags = Array.isArray(place.tags) ? place.tags : []
   const placeName = localized(place, 'name', lang)
+  const openState = isOpenNow(place)
 
   return (
     <>
@@ -734,6 +814,12 @@ function PlaceDetails({ place, events, offers, lang, t, onLanguageChange, onBack
           <div className="place-hero-overlay">
             <div className="eyebrow">FERGANA NOW</div>
             <h1>{placeName}</h1>
+
+            {openState !== null && (
+              <div className={`detail-open-status ${openState ? 'is-open' : 'is-closed'}`}>
+                ● {openState ? t.openNow : t.closedNow}
+              </div>
+            )}
 
             <div className="hero-meta">
               <span>📍 {localized(place, 'address', lang) || t.city}</span>
@@ -894,17 +980,41 @@ function PlaceDetails({ place, events, offers, lang, t, onLanguageChange, onBack
 }
 
 function Places({ places, loading, lang, t, onOpen }) {
+  const [openOnly, setOpenOnly] = useState(true)
+
+  const visiblePlaces = useMemo(() => {
+    const source = openOnly
+      ? places.filter((place) => isOpenNow(place) === true)
+      : places
+    return sortOpenFirst(source)
+  }, [places, openOnly])
+
   return (
-    <section className="picker">
+    <section className="picker places-screen">
       <div className="placeholder-icon">📍</div>
       <h1>{t.places}</h1>
       <p>{t.placesDescription}</p>
+
+      <div className="status-filter">
+        <button
+          className={openOnly ? 'active' : ''}
+          onClick={() => setOpenOnly(true)}
+        >
+          {t.openPlaces}
+        </button>
+        <button
+          className={!openOnly ? 'active' : ''}
+          onClick={() => setOpenOnly(false)}
+        >
+          {t.allStatus}
+        </button>
+      </div>
 
       {loading ? (
         <div className="muted">{t.loading}</div>
       ) : (
         <div className="place-list">
-          {places.map((place) => (
+          {visiblePlaces.map((place) => (
             <PlaceRow
               key={place.id}
               place={place}
@@ -913,6 +1023,10 @@ function Places({ places, loading, lang, t, onOpen }) {
               onClick={() => onOpen(place)}
             />
           ))}
+
+          {!visiblePlaces.length && (
+            <div className="muted">{t.noCategoryPlaces}</div>
+          )}
         </div>
       )}
     </section>
@@ -1001,7 +1115,9 @@ function Picker({ places, lang, t, onOpen }) {
       return
     }
 
-    const place = places[Math.floor(Math.random() * places.length)]
+    const openPlaces = places.filter((place) => isOpenNow(place) === true)
+    const pool = openPlaces.length ? openPlaces : places
+    const place = pool[Math.floor(Math.random() * pool.length)]
     setResult(place)
   }
 

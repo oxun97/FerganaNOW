@@ -744,3 +744,104 @@ button {
     margin-left: auto;
   }
 }
+
+
+/* Open-now logic */
+
+.open-summary {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 0 16px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(119,255,172,.08);
+  color: #8dffba;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.place-title-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.place-title-line h3 {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.open-badge {
+  flex: 0 0 auto;
+  padding: 5px 7px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: .02em;
+}
+
+.open-badge.is-open,
+.detail-open-status.is-open {
+  background: rgba(119,255,172,.14);
+  color: #77ffac;
+}
+
+.open-badge.is-closed,
+.detail-open-status.is-closed {
+  background: rgba(255,255,255,.06);
+  color: #8c929d;
+}
+
+.detail-open-status {
+  display: inline-flex;
+  margin-bottom: 12px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.status-filter {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 4px;
+  margin: 3px 0 16px;
+  border-radius: 999px;
+  background: #15181d;
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+.status-filter button {
+  border: 0;
+  border-radius: 999px;
+  padding: 9px 12px;
+  background: transparent;
+  color: #858b96;
+  font-size: 12px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.status-filter button.active {
+  background: #77ffac;
+  color: #07110a;
+}
+
+.places-screen {
+  justify-content: flex-start;
+  padding-top: 28px;
+}
+
+@media (max-width: 480px) {
+  .place-title-line {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .open-badge {
+    font-size: 8px;
+  }
+}
