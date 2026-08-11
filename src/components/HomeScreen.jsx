@@ -53,6 +53,7 @@ export default function HomeScreen({
       title: localized(offer, 'title', lang),
       subtitle: localized(placesById[offer.place_id], 'name', lang) || t.city,
       placeId: offer.place_id,
+      image: offer.image_url,
       meta: offer.ends_at ? `${t.until} ${dtTime(offer.ends_at, lang)}` : t.today,
       badge: offer.discount_percent ? `−${offer.discount_percent}%` : t.offer.toUpperCase(),
       note: localized(offer, 'description', lang),
@@ -105,14 +106,21 @@ export default function HomeScreen({
           <div className="horizontal-scroll">
             {liveItems.map((item) => (
               <article className="live-card" key={item.id} onClick={() => onOpenPlace(item.placeId)}>
-                <div className="live-top"><span>{item.icon} {item.label}</span><b>{item.badge}</b></div>
-                <h3>{item.title}</h3>
-                <div className="muted">{item.subtitle}</div>
-                <div className="muted">{item.meta}</div>
-                {item.note && item.note !== item.title && (
-                  <div className="live-note">● {item.note}</div>
-                )}
-                <button className="small-button">{t.details}</button>
+                <div className="live-content">
+                  {item.image && (
+                    <div className="live-thumb" style={{ backgroundImage: `url("${item.image.startsWith('http') ? item.image : `https://xqpfrmsounqbhyiwutrg.supabase.co/storage/v1/object/public/rasmlar/${item.image}`}")` }} />
+                  )}
+                  <div className="live-info">
+                    <div className="live-top"><span>{item.icon} {item.label}</span><b>{item.badge}</b></div>
+                    <h3>{item.title}</h3>
+                    <div className="muted">{item.subtitle}</div>
+                    <div className="muted small-meta">{item.meta}</div>
+                    {item.note && item.note !== item.title && (
+                      <div className="live-note clamp-2">● {item.note}</div>
+                    )}
+                  </div>
+                </div>
+                <button className="small-button full-width-btn">{t.details}</button>
               </article>
             ))}
           </div>

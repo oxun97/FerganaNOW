@@ -229,3 +229,4 @@ body.light-theme {
   color: var(--text-muted) !important;
   max-height: 4.5em !important; /* Примерно 3 строки */
 }
+n.live-content { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 12px; } .live-thumb { flex: 0 0 80px; width: 80px; aspect-ratio: 1/1; border-radius: 14px; background-size: cover; background-position: center; background-color: var(--bg-app); border: 1px solid var(--border); } .live-info { flex: 1; min-width: 0; } .clamp-2 { display: -webkit-box !important; -webkit-line-clamp: 2 !important; -webkit-box-orient: vertical !important; overflow: hidden !important; white-space: pre-wrap !important; } .small-meta { font-size: 11px; margin-top: 2px; } .full-width-btn { width: 100%; margin-top: 8px; }
