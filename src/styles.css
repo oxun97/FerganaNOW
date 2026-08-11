@@ -360,9 +360,9 @@ p { line-height: 1.55; }
 .contact-grid button { min-height: 54px; border: 1px solid var(--line); border-radius: 15px; background: var(--panel); color: #fff; font-weight: 850; cursor: pointer; }
 
 .bottom-nav { position: fixed; z-index: 100; left: 50%; bottom: 0; transform: translateX(-50%); width: min(100%,760px); display: grid; grid-template-columns: repeat(5,1fr); padding: 7px 8px calc(7px + env(safe-area-inset-bottom)); background: rgba(13,15,19,.95); backdrop-filter: blur(18px); border-top: 1px solid var(--line); }
-.nav-item { min-height: 57px; border: 0; background: transparent; color: #727a85; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 3px; cursor: pointer; }
-.nav-item span { font-size: 19px; }
-.nav-item small { font-size: 9px; }
+.nav-item { min-height: 57px; border: 0; background: transparent; color: #727a85; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 4px; cursor: pointer; transition: color 0.2s; }
+.nav-item span { display: flex; align-items: center; justify-content: center; }
+.nav-item small { font-size: 10px; font-weight: 700; margin-top: 2px; }
 .nav-item.active { color: var(--accent); }
 
 .empty-card, .error-card { padding: 18px; border-radius: 17px; background: var(--panel); border: 1px solid var(--line); color: #9299a3; text-align: center; font-size: 12px; line-height: 1.55; }
