@@ -28,7 +28,7 @@ export default function HomeScreen({
   onReload,
 }) {
   const openCount = places.filter((place) => isOpenNow(place) === true).length
-  const nearby = sortPlaces(places.filter((place) => isOpenNow(place) !== false), userLocation).slice(0, 5)
+  const nearby = sortPlaces(places, userLocation).slice(0, 5)
 
   const liveItems = [
     ...events.map((event) => ({
