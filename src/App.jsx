@@ -197,6 +197,7 @@ export default function App() {
           lang={lang}
           t={t}
           userLocation={userLocation}
+          telegramUser={telegramUser}
           favorite={isFavorite(selectedPlace.id)}
           onFavorite={() => toggleFavorite(selectedPlace.id)}
           onBack={() => setSelectedPlaceId(null)}

@@ -22,6 +22,7 @@ export default function PlaceDetails({
   lang,
   t,
   userLocation,
+  telegramUser,
   favorite,
   onFavorite,
   onBack,
@@ -53,13 +54,18 @@ export default function PlaceDetails({
   async function submitReview() {
     if (reviewLoading) return
     setReviewLoading(true)
+    const userName = telegramUser
+      ? [telegramUser.first_name, telegramUser.last_name].filter(Boolean).join(' ') || telegramUser.username
+      : 'Guest'
+
     const { error } = await supabase
       .from('reviews')
       .insert([{
         place_id: place.id,
         rating: newReview.rating,
         comment: newReview.comment,
-        user_name: 'Guest'
+        user_name: userName,
+        user_id: telegramUser?.id ? String(telegramUser.id) : null
       }])
 
     if (!error) {
