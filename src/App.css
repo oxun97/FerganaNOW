@@ -165,6 +165,11 @@ body.light-theme {
   border: 1px solid var(--border) !important;
 }
 
+.review-item p {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .stars-display span {
   font-size: 12px;
   margin-right: 2px;
