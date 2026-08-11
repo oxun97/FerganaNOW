@@ -12,7 +12,7 @@ import MapScreen from './components/MapScreen.jsx'
 import AdminScreen from './components/AdminScreen.jsx'
 import { I18N } from './lib/i18n.js'
 import { readLanguage, readList, writeList } from './lib/storage.js'
-import { getStartParam, getTelegramUser, getTelegramWebApp, initTelegram } from './lib/telegram.js'
+import { getStartParam, getTelegramUser, getTelegramWebApp, haptic, initTelegram } from './lib/telegram.js'
 import { supabase } from './lib/supabase.js'
 import { ensureCloudUser, getCloudFavorites, pushHistory, setCloudFavorite } from './services/cloudSync.js'
 
@@ -140,6 +140,7 @@ export default function App() {
   }
 
   function requestLocation() {
+    haptic('light')
     if (!navigator.geolocation) {
       setLocationState('denied')
       return
@@ -163,6 +164,7 @@ export default function App() {
   }
 
   function toggleFavorite(placeId) {
+    haptic('light')
     const id = String(placeId)
     const enabled = !favoriteIds.includes(id)
     setFavoriteIds((current) => enabled
@@ -172,6 +174,7 @@ export default function App() {
   }
 
   function openPlace(placeOrId) {
+    haptic('selection')
     const id = String(typeof placeOrId === 'object' ? placeOrId.id : placeOrId)
     if (!placesById[id]) return
     setSelectedPlaceId(id)
@@ -181,11 +184,13 @@ export default function App() {
   }
 
   function browseCategory(category) {
+    haptic('selection')
     setPlacesPreset({ category, version: Date.now() })
     setTab('places')
   }
 
   function switchTab(nextTab) {
+    haptic('selection')
     setSelectedPlaceId(null)
     setTab(nextTab)
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -205,7 +210,10 @@ export default function App() {
         t={t}
         onLanguageChange={setLang}
         theme={theme}
-        onToggleTheme={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
+        onToggleTheme={() => {
+          haptic('light')
+          setTheme(t => t === 'dark' ? 'light' : 'dark')
+        }}
       />
 
       <main className="main">

@@ -62,3 +62,26 @@ export async function sharePlace(place, placeName, text) {
   const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(deepLink)}&text=${encodeURIComponent(`${text}: ${placeName}`)}`
   openTelegram(shareUrl)
 }
+
+export function haptic(style = 'light') {
+  const tg = getTelegramWebApp()
+  if (!tg?.HapticFeedback) return
+
+  switch (style) {
+    case 'light':
+    case 'medium':
+    case 'heavy':
+    case 'rigid':
+    case 'soft':
+      tg.HapticFeedback.impactOccurred(style)
+      break
+    case 'success':
+    case 'warning':
+    case 'error':
+      tg.HapticFeedback.notificationOccurred(style)
+      break
+    case 'selection':
+      tg.HapticFeedback.selectionChanged()
+      break
+  }
+}

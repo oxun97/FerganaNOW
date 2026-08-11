@@ -120,7 +120,7 @@ export default function HomeScreen({
       <section>
         <div className="section-head">
           <h2>{t.interesting}</h2>
-          <button className="text-button" onClick={onReload}>{t.refresh}</button>
+          <button className="text-button" onClick={() => { haptic('light'); onReload(); }}>{t.refresh}</button>
         </div>
         {loading ? (
           <div className="horizontal-scroll">
