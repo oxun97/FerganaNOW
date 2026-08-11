@@ -110,9 +110,14 @@ export default function App() {
 
     const firstError = placeResult.error || eventResult.error || offerResult.error
     if (firstError) {
-      console.error(firstError)
+      console.error('Supabase Error:', firstError)
       setError(firstError.message)
     } else {
+      console.log('Successfully loaded from Supabase:', {
+        places: placeResult.data?.length,
+        events: eventResult.data?.length,
+        offers: offerResult.data?.length
+      })
       setPlaces(placeResult.data || [])
       setEvents(eventResult.data || [])
       setOffers(offerResult.data || [])
