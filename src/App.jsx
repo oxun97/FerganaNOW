@@ -18,9 +18,11 @@ import { ensureCloudUser, getCloudFavorites, pushHistory, setCloudFavorite } fro
 
 const FAVORITES_KEY = 'ferganaNowFavorites'
 const HISTORY_KEY = 'ferganaNowHistory'
+const THEME_KEY = 'ferganaNowTheme'
 
 export default function App() {
   const [lang, setLang] = useState(readLanguage)
+  const [theme, setTheme] = useState(() => window.localStorage.getItem(THEME_KEY) || 'dark')
   const [tab, setTab] = useState('home')
   const [places, setPlaces] = useState([])
   const [events, setEvents] = useState([])
@@ -66,6 +68,15 @@ export default function App() {
     document.documentElement.lang = lang
     window.localStorage.setItem('ferganaNowLanguage', lang)
   }, [lang])
+
+  useEffect(() => {
+    if (theme === 'light') {
+      document.body.classList.add('light-theme')
+    } else {
+      document.body.classList.remove('light-theme')
+    }
+    window.localStorage.setItem(THEME_KEY, theme)
+  }, [theme])
 
   useEffect(() => writeList(FAVORITES_KEY, favoriteIds), [favoriteIds])
   useEffect(() => writeList(HISTORY_KEY, historyIds), [historyIds])
@@ -189,7 +200,13 @@ export default function App() {
 
   return (
     <div className="app">
-      <Header lang={lang} t={t} onLanguageChange={setLang} />
+      <Header
+        lang={lang}
+        t={t}
+        onLanguageChange={setLang}
+        theme={theme}
+        onToggleTheme={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
+      />
 
       <main className="main">
         {error && (
