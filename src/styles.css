@@ -13,6 +13,74 @@
   --accent-dark: #07110a;
 }
 
+body.light-theme {
+  --bg: #f2f4f7;
+  --panel: #ffffff;
+  --panel-2: #f8f9fa;
+  --muted: #667085;
+  --line: rgba(0, 0, 0, 0.06);
+  --accent: #00c853;
+  --accent-dark: #ffffff;
+  color: #1a1d21;
+}
+
+body.light-theme .logo,
+body.light-theme h1,
+body.light-theme h2,
+body.light-theme h3,
+body.light-theme strong,
+body.light-theme .place-copy h3,
+body.light-theme .event-copy h3 {
+  color: #1a1d21 !important;
+}
+
+body.light-theme .muted,
+body.light-theme .caption,
+body.light-theme p,
+body.light-theme .place-meta,
+body.light-theme .event-copy p {
+  color: #4a5568 !important;
+}
+
+body.light-theme .card,
+body.light-theme .place-card,
+body.light-theme .event-card,
+body.light-theme .offer-card,
+body.light-theme .live-card,
+body.light-theme .admin-request-card,
+body.light-theme .review-item,
+body.light-theme .telegram-card,
+body.light-theme .creator-card,
+body.light-theme .picker-result {
+  background: var(--panel) !important;
+  border-color: var(--line) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+body.light-theme .search-box,
+body.light-theme .filter-pill,
+body.light-theme .chip,
+body.light-theme .segmented,
+body.light-theme .admin-tab,
+body.light-theme .review-form textarea,
+body.light-theme .add-place-form input,
+body.light-theme .add-place-form textarea,
+body.light-theme .add-place-form select {
+  background: var(--panel-2) !important;
+  border-color: var(--line) !important;
+  color: #1a1d21 !important;
+}
+
+body.light-theme .header,
+body.light-theme .bottom-nav {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-color: var(--line) !important;
+}
+
+body.light-theme .logo span {
+  color: var(--accent);
+}
+
 * { box-sizing: border-box; }
 html { background: var(--bg); scroll-behavior: smooth; }
 body { margin: 0; min-width: 320px; min-height: 100vh; background: var(--bg); }

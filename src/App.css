@@ -108,75 +108,66 @@ body.light-theme {
   white-space: nowrap;
 }
 
-/* --- REVIEWS SECTION --- */
+/* --- FINAL BEAUTIFUL REVIEWS --- */
 
 .review-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
   background: var(--bg-card) !important;
-  padding: 24px !important;
-  border-radius: 26px !important;
-  margin-bottom: 30px;
   border: 1px solid var(--border) !important;
+  padding: 20px !important;
+  border-radius: 28px !important;
+  margin-bottom: 24px;
 }
 
 .rating-selector {
   display: flex;
   justify-content: center;
-  gap: 12px;
+  gap: 16px;
   padding: 10px 0;
+  margin-bottom: 5px;
 }
 
 .star-btn {
   background: transparent !important;
   border: none !important;
-  font-size: 42px !important;
-  color: #2c313a !important;
+  font-size: 40px !important;
+  color: #333a45 !important;
   cursor: pointer;
-  padding: 0 4px !important;
-  transition: all 0.2s;
+  padding: 0 !important;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .star-btn.active {
   color: #77ffac !important;
   transform: scale(1.1);
+  filter: drop-shadow(0 0 12px rgba(119, 255, 172, 0.4));
 }
 
 .review-form textarea {
-  background: var(--bg-app) !important;
+  background: rgba(0, 0, 0, 0.2) !important;
   border: 1px solid var(--border) !important;
   border-radius: 18px !important;
   padding: 16px !important;
-  color: var(--text) !important;
-  font-size: 16px !important;
-  min-height: 120px !important;
-  resize: none !important;
+  color: #fff !important;
+  font-size: 15px !important;
+  line-height: 1.5 !important;
+  min-height: 100px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
   outline: none !important;
-}
-
-.review-form textarea:focus {
-  border-color: var(--accent) !important;
+  resize: none !important;
 }
 
 .review-item {
-  padding: 20px;
-  background: var(--bg-card) !important;
-  border-radius: 24px !important;
-  margin-bottom: 14px;
+  background: rgba(255, 255, 255, 0.02) !important;
+  padding: 18px !important;
+  border-radius: 22px !important;
+  margin-bottom: 12px;
   border: 1px solid var(--border) !important;
 }
 
-.review-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.stars-display {
-  color: var(--accent);
-  letter-spacing: 2px;
+.stars-display span {
+  font-size: 12px;
+  margin-right: 2px;
 }
 
 /* --- ADMIN PANEL --- */
