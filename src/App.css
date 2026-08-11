@@ -217,3 +217,15 @@ body.light-theme {
 .add-place-form input:focus {
   border-color: var(--accent) !important;
 }
+.description-preview {
+  display: -webkit-box !important;
+  -webkit-line-clamp: 3 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+  line-height: 1.5 !important;
+  font-size: 13px !important;
+  margin: 6px 0 !important;
+  color: var(--text-muted) !important;
+}

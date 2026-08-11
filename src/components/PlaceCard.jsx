@@ -33,7 +33,7 @@ export default function PlaceCard({ place, lang, t, userLocation, favorite, onFa
             </span>
           )}
         </div>
-        <div className="muted clamp-1">{localized(place, 'description', lang) || category}</div>
+        <div className="muted description-preview">{localized(place, 'description', lang) || category}</div>
         <div className="place-meta">
           <span>🕐 {place.close_time ? `${t.until} ${time(place.close_time)}` : t.scheduleUnknown}</span>
           <span>💰 {formatMoney(place.average_check, lang, t)}</span>

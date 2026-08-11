@@ -207,21 +207,40 @@ export default function AdminScreen({ onBack, lang, t }) {
 
               <div className="form-group">
                 <label>Координаты (из Яндекс Карт)</label>
-                <input
-                  placeholder="40.3833, 71.7833"
-                  value={editingItem.latitude && editingItem.longitude ? `${editingItem.latitude}, ${editingItem.longitude}` : ''}
-                  onChange={e => {
-                    const val = e.target.value
-                    const parts = val.split(',').map(p => p.trim())
-                    if (parts.length === 2) {
-                      setEditingItem({ ...editingItem, latitude: parts[0], longitude: parts[1] })
-                    } else {
-                      // Allow typing/pasting freely until it becomes valid
-                      setEditingItem({ ...editingItem, latitude: val, longitude: '' })
-                    }
-                  }}
-                />
-                <small style={{ color: '#8e959f', fontSize: '11px', marginTop: '4px' }}>Просто скопируйте координаты целиком и вставьте сюда</small>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <input
+                    style={{ flex: 1 }}
+                    placeholder="40.3833, 71.7833"
+                    value={editingItem.latitude && editingItem.longitude ? `${editingItem.latitude}, ${editingItem.longitude}` : ''}
+                    onChange={e => {
+                      const val = e.target.value
+                      const parts = val.split(',').map(p => p.trim())
+                      if (parts.length === 2) {
+                        setEditingItem({ ...editingItem, latitude: parts[0], longitude: parts[1] })
+                      } else {
+                        setEditingItem({ ...editingItem, latitude: val, longitude: '' })
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="secondary"
+                    style={{ width: 'auto', padding: '0 15px' }}
+                    onClick={async () => {
+                      if (!editingItem.latitude || !editingItem.longitude) return alert('Сначала вставьте координаты')
+                      const ymaps = window.ymaps
+                      if (ymaps) {
+                        const res = await ymaps.geocode([editingItem.latitude, editingItem.longitude])
+                        const firstGeoObject = res.geoObjects.get(0)
+                        const addr = firstGeoObject.getAddressLine()
+                        setEditingItem({ ...editingItem, address: addr })
+                      }
+                    }}
+                  >
+                    🔍
+                  </button>
+                </div>
+                <small style={{ color: '#8e959f', fontSize: '11px', marginTop: '4px' }}>Вставьте координаты и нажмите на лупу, чтобы адрес заполнился сам</small>
               </div>
 
               <div className="form-group">
