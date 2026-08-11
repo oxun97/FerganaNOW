@@ -7,6 +7,7 @@ import {
   sortPlaces,
 } from '../lib/placeUtils.js'
 import PlaceCard from './PlaceCard.jsx'
+import { SkeletonCard, SkeletonLiveCard } from './Skeleton.jsx'
 
 export default function HomeScreen({
   places,
@@ -94,7 +95,11 @@ export default function HomeScreen({
           <button className="text-button" onClick={onReload}>{t.refresh}</button>
         </div>
         {loading ? (
-          <div className="empty-card">{t.loading}</div>
+          <div className="horizontal-scroll">
+            <SkeletonLiveCard />
+            <SkeletonLiveCard />
+            <SkeletonLiveCard />
+          </div>
         ) : liveItems.length ? (
           <div className="horizontal-scroll">
             {liveItems.map((item) => (
@@ -119,18 +124,26 @@ export default function HomeScreen({
           <button className="text-button" onClick={onOpenPlaces}>{t.allPlaces}</button>
         </div>
         <div className="place-list">
-          {nearby.map((place) => (
-            <PlaceCard
-              key={place.id}
-              place={place}
-              lang={lang}
-              t={t}
-              userLocation={userLocation}
-              favorite={isFavorite(place.id)}
-              onFavorite={() => onFavorite(place.id)}
-              onOpen={() => onOpenPlace(place.id)}
-            />
-          ))}
+          {loading ? (
+            <>
+              <SkeletonCard />
+              <SkeletonCard />
+              <SkeletonCard />
+            </>
+          ) : (
+            nearby.map((place) => (
+              <PlaceCard
+                key={place.id}
+                place={place}
+                lang={lang}
+                t={t}
+                userLocation={userLocation}
+                favorite={isFavorite(place.id)}
+                onFavorite={() => onFavorite(place.id)}
+                onOpen={() => onOpenPlace(place.id)}
+              />
+            ))
+          )}
           {!loading && !nearby.length && <div className="empty-card">{t.noPlaces}</div>}
         </div>
       </section>

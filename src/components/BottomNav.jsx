@@ -1,6 +1,7 @@
 const items = [
   ['home', '⚡', 'home'],
   ['places', '📍', 'places'],
+  ['map', '🗺️', 'map'],
   ['today', '🎉', 'today'],
   ['pick', '🎲', 'pick'],
   ['profile', '👤', 'profile'],

@@ -11,8 +11,9 @@ import {
   placeImageUrl,
   time,
 } from '../lib/placeUtils.js'
-import { SUPABASE_URL } from '../lib/supabase.js'
+import { supabase, SUPABASE_URL } from '../lib/supabase.js'
 import { openExternal, sharePlace } from '../lib/telegram.js'
+import { useEffect, useState } from 'react'
 
 export default function PlaceDetails({
   place,
@@ -25,12 +26,48 @@ export default function PlaceDetails({
   onFavorite,
   onBack,
 }) {
+  const [reviews, setReviews] = useState([])
+  const [reviewLoading, setReviewLoading] = useState(false)
+  const [newReview, setNewReview] = useState({ rating: 5, comment: '' })
+
   const [icon, category] = metaFor(place.category, t)
   const image = placeImageUrl(place, SUPABASE_URL)
   const open = isOpenNow(place)
   const distance = formatDistance(placeDistanceKm(place, userLocation), t)
   const instagram = normalizeInstagram(place.instagram)
   const tags = Array.isArray(place.tags) ? place.tags : []
+
+  useEffect(() => {
+    loadReviews()
+  }, [place.id])
+
+  async function loadReviews() {
+    const { data } = await supabase
+      .from('reviews')
+      .select('*')
+      .eq('place_id', place.id)
+      .order('created_at', { ascending: false })
+    if (data) setReviews(data)
+  }
+
+  async function submitReview() {
+    if (reviewLoading) return
+    setReviewLoading(true)
+    const { error } = await supabase
+      .from('reviews')
+      .insert([{
+        place_id: place.id,
+        rating: newReview.rating,
+        comment: newReview.comment,
+        user_name: 'Guest'
+      }])
+
+    if (!error) {
+      setNewReview({ rating: 5, comment: '' })
+      loadReviews()
+    }
+    setReviewLoading(false)
+  }
 
   return (
     <div className="detail-shell">
@@ -125,6 +162,43 @@ export default function PlaceDetails({
             {place.phone && <button onClick={() => { window.location.href = `tel:${place.phone}` }}>📞 {t.call}</button>}
             {instagram && <button onClick={() => openExternal(instagram)}>📸 {t.instagram}</button>}
             <button onClick={() => openExternal(mapsUrl(place, lang))}>📍 {t.onMap}</button>
+          </div>
+        </section>
+
+        <section className="detail-section">
+          <h2>{lang === 'uz' ? 'Sharhlar' : 'Отзывы'}</h2>
+
+          <div className="review-form">
+            <div className="rating-selector">
+              {[1, 2, 3, 4, 5].map(star => (
+                <button
+                  key={star}
+                  className={newReview.rating >= star ? 'star active' : 'star'}
+                  onClick={() => setNewReview({ ...newReview, rating: star })}
+                >★</button>
+              ))}
+            </div>
+            <textarea
+              placeholder={lang === 'uz' ? 'Fikringizni qoldiring...' : 'Оставьте ваш отзыв...'}
+              value={newReview.comment}
+              onChange={e => setNewReview({ ...newReview, comment: e.target.value })}
+            />
+            <button className="primary small-button" onClick={submitReview} disabled={reviewLoading}>
+              {lang === 'uz' ? 'Yuborish' : 'Отправить'}
+            </button>
+          </div>
+
+          <div className="reviews-list">
+            {reviews.map(review => (
+              <div key={review.id} className="review-item">
+                <div className="review-header">
+                  <strong>{review.user_name}</strong>
+                  <span className="stars">{'★'.repeat(review.rating)}</span>
+                </div>
+                <p>{review.comment}</p>
+                <small className="muted">{new Date(review.created_at).toLocaleDateString()}</small>
+              </div>
+            ))}
           </div>
         </section>
       </main>

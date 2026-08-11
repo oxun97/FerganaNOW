@@ -8,6 +8,7 @@ import {
   sortPlaces,
 } from '../lib/placeUtils.js'
 import PlaceCard from './PlaceCard.jsx'
+import { SkeletonCard } from './Skeleton.jsx'
 
 const budgets = [
   ['low', 'budgetLow'],
@@ -140,7 +141,12 @@ export default function PlacesScreen({
 
       <div className="place-list top-gap">
         {loading ? (
-          <div className="empty-card">{t.loading}</div>
+          <>
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </>
         ) : filtered.length ? filtered.map((place) => (
           <PlaceCard
             key={place.id}

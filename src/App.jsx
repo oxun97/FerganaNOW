@@ -7,6 +7,9 @@ import TodayScreen from './components/TodayScreen.jsx'
 import PickerScreen from './components/PickerScreen.jsx'
 import ProfileScreen from './components/ProfileScreen.jsx'
 import PlaceDetails from './components/PlaceDetails.jsx'
+import AddPlaceScreen from './components/AddPlaceScreen.jsx'
+import MapScreen from './components/MapScreen.jsx'
+import AdminScreen from './components/AdminScreen.jsx'
 import { I18N } from './lib/i18n.js'
 import { readLanguage, readList, writeList } from './lib/storage.js'
 import { getStartParam, getTelegramUser, getTelegramWebApp, initTelegram } from './lib/telegram.js'
@@ -254,6 +257,16 @@ export default function App() {
           />
         )}
 
+        {tab === 'map' && (
+          <MapScreen
+            places={places}
+            lang={lang}
+            t={t}
+            userLocation={userLocation}
+            onOpenPlace={openPlace}
+          />
+        )}
+
         {tab === 'today' && (
           <TodayScreen
             events={events}
@@ -288,6 +301,24 @@ export default function App() {
             cloudEnabled={Boolean(cloudUserId)}
             onFavorite={toggleFavorite}
             onOpenPlace={openPlace}
+            onOpenAddPlace={() => setTab('add-place')}
+            onOpenAdmin={() => setTab('admin')}
+          />
+        )}
+
+        {tab === 'add-place' && (
+          <AddPlaceScreen
+            lang={lang}
+            t={t}
+            onBack={() => setTab('profile')}
+          />
+        )}
+
+        {tab === 'admin' && (
+          <AdminScreen
+            lang={lang}
+            t={t}
+            onBack={() => setTab('profile')}
           />
         )}
       </main>

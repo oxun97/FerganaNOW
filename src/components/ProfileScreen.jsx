@@ -12,6 +12,8 @@ export default function ProfileScreen({
   cloudEnabled,
   onFavorite,
   onOpenPlace,
+  onOpenAddPlace,
+  onOpenAdmin,
 }) {
   const favoritePlaces = favoriteIds.map((id) => placesById[id]).filter(Boolean)
   const historyPlaces = historyIds.map((id) => placesById[id]).filter(Boolean)
@@ -43,6 +45,12 @@ export default function ProfileScreen({
           <div className={`sync-state ${cloudEnabled ? 'on' : ''}`}>● {cloudEnabled ? t.cloudOn : t.cloudLocal}</div>
         </div>
       </article>
+
+      <div style={{ margin: '16px 0' }}>
+        <button className="primary full-width" onClick={onOpenAddPlace}>
+          {lang === 'uz' ? '+ Joy qo\'shish' : '+ Добавить место'}
+        </button>
+      </div>
 
       <div className="section-head"><h2>♥ {t.favorites}</h2><span className="count-pill">{favoritePlaces.length}</span></div>
       {favoritePlaces.length ? (
@@ -79,7 +87,7 @@ export default function ProfileScreen({
 
       <div className="section-head"><h2>{t.creatorLabel}</h2></div>
       <article className="creator-card creator-card-personal">
-        <div className="creator-photo" role="img" aria-label={t.creatorName} />
+        <div className="creator-photo" role="img" aria-label={t.creatorName} onClick={onOpenAdmin} />
         <div className="creator-copy">
           <div className="creator-label">{t.creatorLabel}</div>
           <div className="creator-name">{t.creatorName}</div>
