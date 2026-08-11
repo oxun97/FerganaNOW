@@ -1364,30 +1364,29 @@ button {
 .admin-tabs {
   display: flex;
   gap: 8px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   overflow-x: auto;
-  padding-bottom: 4px;
-}
-
-.admin-tabs::-webkit-scrollbar {
-  display: none;
+  padding: 4px 0;
+  scrollbar-width: none;
 }
 
 .admin-tab {
-  white-space: nowrap;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  padding: 8px 16px;
-  border-radius: 20px;
-  color: var(--text-muted);
+  background: #1b1f25;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #8e959f;
+  padding: 8px 18px;
+  border-radius: 99px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .admin-tab.active {
-  background: var(--accent);
-  color: #000;
-  border-color: var(--accent);
+  background: rgba(119, 255, 172, 0.12);
+  color: #77ffac;
+  border-color: rgba(119, 255, 172, 0.3);
 }
 
 .profile-intro {

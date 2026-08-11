@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase.js'
 import ImageUpload from './ImageUpload.jsx'
-import { localized } from '../lib/placeUtils.js'
 
 export default function AdminScreen({ onBack, lang, t }) {
   const [tab, setTab] = useState('requests')
@@ -51,7 +50,7 @@ export default function AdminScreen({ onBack, lang, t }) {
       await supabase.from('place_requests').update({ status: 'approved' }).eq('id', req.id)
       loadData()
     } else {
-      alert('Error: ' + insertError.message)
+      alert('Ошибка: ' + insertError.message)
     }
   }
 
@@ -85,19 +84,19 @@ export default function AdminScreen({ onBack, lang, t }) {
     <section className="screen-section">
       <div className="page-title-row">
         <button className="back-button" onClick={onBack}>←</button>
-        <h1>Admin Panel</h1>
+        <h1>Админка</h1>
         {!editingItem && tab !== 'requests' && (
-          <button className="primary small-button" onClick={() => setEditingItem({ is_active: true })}>+ Add</button>
+          <button className="primary small-button" onClick={() => setEditingItem({ is_active: true })}>+ Добавить</button>
         )}
       </div>
 
       {!editingItem && (
         <div className="admin-tabs">
           {[
-            ['requests', 'Requests'],
-            ['places', 'Places'],
-            ['events', 'Events'],
-            ['offers', 'Offers']
+            ['requests', 'Заявки'],
+            ['places', 'Места'],
+            ['events', 'События'],
+            ['offers', 'Акции']
           ].map(([id, label]) => (
             <button
               key={id}
@@ -112,7 +111,11 @@ export default function AdminScreen({ onBack, lang, t }) {
 
       {editingItem ? (
         <form className="add-place-form" onSubmit={saveItem}>
-          <h2>{editingItem.id ? 'Edit' : 'Create'} {tab.slice(0, -1)}</h2>
+          <h2>{editingItem.id ? 'Изменить' : 'Создать'} {
+            tab === 'places' ? 'место' :
+            tab === 'events' ? 'событие' :
+            tab === 'offers' ? 'акцию' : 'заявку'
+          }</h2>
 
           <ImageUpload
             currentImage={editingItem.image_url}
@@ -121,21 +124,21 @@ export default function AdminScreen({ onBack, lang, t }) {
 
           {(tab === 'events' || tab === 'offers') && (
             <div className="form-group">
-              <label>Place *</label>
+              <label>Место *</label>
               <select
                 required
                 value={editingItem.place_id || ''}
                 onChange={e => setEditingItem({ ...editingItem, place_id: e.target.value })}
                 style={{ background: '#1b1f25', color: '#fff', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,.08)' }}
               >
-                <option value="">Select Place</option>
+                <option value="">Выберите место</option>
                 {places.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             </div>
           )}
 
           <div className="form-group">
-            <label>Title/Name *</label>
+            <label>{tab === 'places' || tab === 'requests' ? 'Название' : 'Заголовок'} *</label>
             <input
               required
               value={editingItem.name || editingItem.title || ''}
@@ -145,7 +148,7 @@ export default function AdminScreen({ onBack, lang, t }) {
 
           {(tab === 'events' || tab === 'offers') && (
             <div className="form-group">
-              <label>Starts At</label>
+              <label>Начало</label>
               <input
                 type="datetime-local"
                 value={editingItem.starts_at ? new Date(editingItem.starts_at).toISOString().slice(0, 16) : ''}
@@ -155,7 +158,7 @@ export default function AdminScreen({ onBack, lang, t }) {
           )}
 
           <div className="form-group">
-            <label>Description</label>
+            <label>Описание</label>
             <textarea
               rows="3"
               value={editingItem.description || ''}
@@ -164,16 +167,16 @@ export default function AdminScreen({ onBack, lang, t }) {
           </div>
 
           <div className="req-actions">
-            <button className="primary full-width" type="submit">Save</button>
-            <button className="secondary full-width" type="button" onClick={() => setEditingItem(null)}>Cancel</button>
+            <button className="primary full-width" type="submit">Сохранить</button>
+            <button className="secondary full-width" type="button" onClick={() => setEditingItem(null)}>Отмена</button>
           </div>
         </form>
       ) : (
         <div className="admin-list">
           {loading ? (
-            <div className="empty-card">Loading...</div>
+            <div className="empty-card">Загрузка...</div>
           ) : data.length === 0 ? (
-            <div className="empty-card">No items found</div>
+            <div className="empty-card">Ничего не найдено</div>
           ) : (
             data.map(item => (
               <article key={item.id} className="admin-request-card">
@@ -182,7 +185,7 @@ export default function AdminScreen({ onBack, lang, t }) {
                   <div style={{ display: 'flex', gap: '8px' }}>
                     {tab !== 'requests' && (
                       <span className={`status-dot ${item.is_active ? 'on' : 'off'}`} onClick={() => toggleActive(item)}>
-                        {item.is_active ? 'Active' : 'Hidden'}
+                        {item.is_active ? 'Активно' : 'Скрыто'}
                       </span>
                     )}
                     <span className="req-date">{new Date(item.created_at).toLocaleDateString()}</span>
@@ -191,20 +194,19 @@ export default function AdminScreen({ onBack, lang, t }) {
                 <div className="req-body">
                   {item.address && <div>📍 {item.address}</div>}
                   {item.phone && <div>📞 {item.phone}</div>}
-                  {item.description && <p style={{ fontSize: '12px', color: '#8e959f' }}>{item.description.slice(0, 60)}...</p>}
                 </div>
                 <div className="req-actions">
                   {tab === 'requests' ? (
                     <>
-                      <button className="primary small-button" onClick={() => approve(item)}>Approve</button>
-                      <button className="secondary small-button" onClick={() => setEditingItem(item)}>Edit</button>
+                      <button className="primary small-button" onClick={() => approve(item)}>Одобрить</button>
+                      <button className="secondary small-button" onClick={() => setEditingItem(item)}>Правка</button>
                     </>
                   ) : (
                     <>
-                      <button className="primary small-button" onClick={() => setEditingItem(item)}>Edit</button>
+                      <button className="primary small-button" onClick={() => setEditingItem(item)}>Изменить</button>
                       <button className="secondary small-button" onClick={() => {
-                        if(confirm('Delete?')) supabase.from(tab).delete().eq('id', item.id).then(() => loadData())
-                      }}>Delete</button>
+                        if(confirm('Удалить?')) supabase.from(tab).delete().eq('id', item.id).then(() => loadData())
+                      }}>Удалить</button>
                     </>
                   )}
                 </div>
