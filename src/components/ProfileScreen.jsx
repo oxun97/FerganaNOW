@@ -47,7 +47,6 @@ export default function ProfileScreen({
           <h1>{t.profile}</h1>
         </div>
       </div>
-      <p className="page-description">{t.profileIntro}</p>
 
       <article className="telegram-card">
         {telegramUser?.photo_url ? (

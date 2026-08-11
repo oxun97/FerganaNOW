@@ -263,6 +263,8 @@ export default function App() {
             lang={lang}
             t={t}
             userLocation={userLocation}
+            locationState={locationState}
+            onRequestLocation={requestLocation}
             onOpenPlace={openPlace}
           />
         )}

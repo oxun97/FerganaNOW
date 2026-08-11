@@ -205,23 +205,23 @@ export default function AdminScreen({ onBack, lang, t }) {
                 </div>
               </div>
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Широта (Lat)</label>
-                  <input
-                    type="number" step="any"
-                    value={editingItem.latitude || ''}
-                    onChange={e => setEditingItem({ ...editingItem, latitude: e.target.value })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Долгота (Lng)</label>
-                  <input
-                    type="number" step="any"
-                    value={editingItem.longitude || ''}
-                    onChange={e => setEditingItem({ ...editingItem, longitude: e.target.value })}
-                  />
-                </div>
+              <div className="form-group">
+                <label>Координаты (из Яндекс Карт)</label>
+                <input
+                  placeholder="40.3833, 71.7833"
+                  value={editingItem.latitude && editingItem.longitude ? `${editingItem.latitude}, ${editingItem.longitude}` : ''}
+                  onChange={e => {
+                    const val = e.target.value
+                    const parts = val.split(',').map(p => p.trim())
+                    if (parts.length === 2) {
+                      setEditingItem({ ...editingItem, latitude: parts[0], longitude: parts[1] })
+                    } else {
+                      // Allow typing/pasting freely until it becomes valid
+                      setEditingItem({ ...editingItem, latitude: val, longitude: '' })
+                    }
+                  }}
+                />
+                <small style={{ color: '#8e959f', fontSize: '11px', marginTop: '4px' }}>Просто скопируйте координаты целиком и вставьте сюда</small>
               </div>
 
               <div className="form-group">

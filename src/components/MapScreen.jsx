@@ -1,38 +1,38 @@
 import { useEffect, useRef } from 'react'
 
-export default function MapScreen({ places, lang, t, userLocation, onOpenPlace }) {
+export default function MapScreen({ places, lang, t, userLocation, locationState, onRequestLocation, onOpenPlace }) {
   const mapRef = useRef(null)
   const mapInstance = useRef(null)
+  const userMarkerRef = useRef(null)
+
+  // Auto request location when entering map if not already active
+  useEffect(() => {
+    if (locationState === 'idle') {
+      onRequestLocation()
+    }
+  }, [locationState, onRequestLocation])
 
   useEffect(() => {
     if (!mapRef.current) return
 
-    // Wait for Yandex Maps API to be ready
     const ymaps = window.ymaps
-    if (!ymaps) {
-      console.error('Yandex Maps API not found')
-      return
-    }
+    if (!ymaps) return
 
     ymaps.ready(() => {
-      if (mapInstance.current) {
-        mapInstance.current.destroy()
-      }
+      if (mapInstance.current) return
 
-      // Fergana center
+      // Initial center: user if known, else Fergana
       const center = userLocation
         ? [userLocation.latitude, userLocation.longitude]
         : [40.3833, 71.7833]
 
       mapInstance.current = new ymaps.Map(mapRef.current, {
         center: center,
-        zoom: 14,
+        zoom: 15,
         controls: ['zoomControl', 'geolocationControl']
-      }, {
-        searchControlProvider: 'yandex#search'
       })
 
-      // Add places markers
+      // Add places
       places.forEach(place => {
         if (place.latitude && place.longitude) {
           const placemark = new ymaps.Placemark([place.latitude, place.longitude], {
@@ -43,50 +43,60 @@ export default function MapScreen({ places, lang, t, userLocation, onOpenPlace }
                 <button id="map-btn-${place.id}" style="
                   background: #77ffac;
                   border: none;
-                  padding: 8px 12px;
-                  border-radius: 8px;
+                  padding: 10px;
+                  border-radius: 10px;
                   font-weight: bold;
-                  cursor: pointer;
                   width: 100%;
                   color: #000;
-                ">${t.details}</button>
+                ">Подробнее</button>
               </div>
-            `,
-            hintContent: place.name
+            `
           }, {
             preset: 'islands#greenDotIcon'
           })
 
           mapInstance.current.geoObjects.add(placemark)
 
-          // Handle button click inside balloon
           placemark.events.add('balloonopen', () => {
             const btn = document.getElementById(`map-btn-${place.id}`)
-            if (btn) {
-              btn.onclick = () => onOpenPlace(place.id)
-            }
+            if (btn) btn.onclick = () => onOpenPlace(place.id)
           })
         }
       })
-
-      // Add user location marker
-      if (userLocation) {
-        const userMark = new ymaps.Placemark([userLocation.latitude, userLocation.longitude], {
-          hintContent: t.locationActive
-        }, {
-          preset: 'islands#blueCircleDotIconWithOutline'
-        })
-        mapInstance.current.geoObjects.add(userMark)
-      }
     })
 
     return () => {
-      if (mapInstance.current && typeof mapInstance.current.destroy === 'function') {
+      if (mapInstance.current) {
+        // We don't destroy immediately to avoid flickering on tab switch if possible,
+        // but for safety in React strict mode:
         mapInstance.current.destroy()
         mapInstance.current = null
       }
     }
-  }, [places, userLocation, t, onOpenPlace])
+  }, [places, t, onOpenPlace])
+
+  // Update user marker and pan when location changes
+  useEffect(() => {
+    const ymaps = window.ymaps
+    if (!ymaps || !mapInstance.current || !userLocation) return
+
+    if (userMarkerRef.current) {
+      userMarkerRef.current.geometry.setCoordinates([userLocation.latitude, userLocation.longitude])
+    } else {
+      userMarkerRef.current = new ymaps.Placemark([userLocation.latitude, userLocation.longitude], {
+        hintContent: 'Вы здесь'
+      }, {
+        preset: 'islands#blueCircleDotIconWithOutline'
+      })
+      mapInstance.current.geoObjects.add(userMarkerRef.current)
+    }
+
+    // Smooth pan to user
+    mapInstance.current.panTo([userLocation.latitude, userLocation.longitude], {
+      flying: true,
+      duration: 1000
+    })
+  }, [userLocation])
 
   return (
     <section className="screen-section no-padding full-height">
@@ -94,7 +104,7 @@ export default function MapScreen({ places, lang, t, userLocation, onOpenPlace }
         ref={mapRef}
         style={{
           width: '100%',
-          height: 'calc(100vh - 160px)',
+          height: 'calc(100vh - 155px)',
           borderRadius: '24px',
           overflow: 'hidden',
           backgroundColor: '#1a1d21'

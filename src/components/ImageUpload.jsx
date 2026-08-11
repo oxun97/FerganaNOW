@@ -22,32 +22,32 @@ export default function ImageUpload({ onUpload, currentImage, folder = 'rasmlar'
 
       onUpload(filePath)
     } catch (error) {
-      alert('Error uploading image: ' + error.message)
+      alert('Ошибка при загрузке: ' + error.message)
     } finally {
       setUploading(false)
     }
   }
 
   return (
-    <div className="image-upload-container">
-      {currentImage && (
-        <div className="upload-preview">
+    <div className="image-upload-wrapper">
+      {currentImage ? (
+        <div className="upload-preview-box">
           <img
             src={currentImage.startsWith('http') ? currentImage : `https://xqpfrmsounqbhyiwutrg.supabase.co/storage/v1/object/public/${folder}/${currentImage}`}
             alt="Preview"
           />
+          <label className="change-photo-overlay">
+            <span>{uploading ? 'Загрузка...' : 'Заменить фото'}</span>
+            <input type="file" accept="image/*" onChange={handleUpload} disabled={uploading} hidden />
+          </label>
         </div>
+      ) : (
+        <label className="upload-placeholder-box">
+          <div className="upload-icon">📸</div>
+          <span>{uploading ? 'Загрузка...' : 'Нажмите, чтобы добавить фото'}</span>
+          <input type="file" accept="image/*" onChange={handleUpload} disabled={uploading} hidden />
+        </label>
       )}
-      <label className="upload-label">
-        {uploading ? 'Uploading...' : (currentImage ? 'Change Photo' : 'Upload Photo')}
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleUpload}
-          disabled={uploading}
-          style={{ display: 'none' }}
-        />
-      </label>
     </div>
   )
 }
