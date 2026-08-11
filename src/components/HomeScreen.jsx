@@ -188,6 +188,35 @@ export default function HomeScreen({
           {!loading && !nearby.length && <div className="empty-card">{t.noPlaces}</div>}
         </div>
       </section>
+
+      <div className="section-head"><h2>{t.creatorLabel}</h2></div>
+      <article className="creator-card creator-card-personal" style={{ margin: '0 16px 20px' }}>
+        <div className="creator-photo" role="img" aria-label={t.creatorName} />
+        <div className="creator-copy">
+          <div className="creator-label">{t.creatorLabel}</div>
+          <div className="creator-name">{t.creatorName}</div>
+          <div className="creator-row">
+            <a
+              className="creator-handle"
+              href={CREATOR_URL}
+              onClick={(event) => {
+                event.preventDefault()
+                openTelegram(CREATOR_URL)
+              }}
+            >
+              @oxun_uz
+            </a>
+            <button className="creator-write-btn" onClick={() => openTelegram(CREATOR_URL)}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+              <span>{lang === 'uz' ? 'Yozish' : 'Написать'}</span>
+            </button>
+          </div>
+          <div className="creator-text">{t.creatorText}</div>
+        </div>
+      </article>
     </>
   )
 }
