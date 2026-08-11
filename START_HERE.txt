@@ -1,0 +1,25 @@
+FERGANA NOW — START HERE
+
+Это ПОЛНЫЙ проект MVP 1.0. Предыдущие update-архивы больше не нужны.
+
+Как установить разом:
+1) Останови Vite клавишами Ctrl+C.
+2) Распакуй ВСЁ содержимое этого архива прямо в:
+   C:\Users\admin_pc\Desktop\FerganaNOW
+   и согласись на замену файлов.
+   Папку .git не удаляй.
+3) В терминале в этой папке:
+   npm install
+4) Supabase → SQL Editor → выполни:
+   supabase/mvp_1_0.sql
+5) Запусти:
+   npm run dev -- --host 127.0.0.1 --port 5173
+6) Проверь приложение.
+7) Публикация:
+   git add .
+   git commit -m "Fergana NOW MVP 1.0"
+   git push
+
+Автор проекта в интерфейсе сохранён:
+Oxun.M
+https://t.me/oxun_uz
