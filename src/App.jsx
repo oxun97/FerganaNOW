@@ -102,6 +102,13 @@ const I18N = {
     openPlaces: 'Открытые сейчас',
     allStatus: 'Все',
     openCount: 'мест открыто прямо сейчас',
+    nearMe: 'Рядом со мной',
+    locationNeeded: 'Разрешите геолокацию — покажем ближайшие места',
+    locationDenied: 'Геолокация недоступна',
+    locationActive: 'Показываем ближайшие места',
+    km: 'км',
+    meters: 'м',
+    distanceUnknown: 'Расстояние неизвестно',
   },
   uz: {
     city: 'Farg‘ona',
@@ -202,6 +209,13 @@ const I18N = {
     openPlaces: 'Hozir ochiq joylar',
     allStatus: 'Barchasi',
     openCount: 'ta joy hozir ochiq',
+    nearMe: 'Menga yaqin',
+    locationNeeded: 'Geolokatsiyaga ruxsat bering — yaqin joylarni ko‘rsatamiz',
+    locationDenied: 'Geolokatsiya mavjud emas',
+    locationActive: 'Eng yaqin joylar ko‘rsatilmoqda',
+    km: 'km',
+    meters: 'm',
+    distanceUnknown: 'Masofa noma’lum',
   },
 }
 
@@ -361,6 +375,68 @@ function sortOpenFirst(items) {
   })
 }
 
+
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const values = [lat1, lon1, lat2, lon2].map(Number)
+  if (values.some((value) => Number.isNaN(value))) return null
+
+  const [aLat, aLon, bLat, bLon] = values
+  const earthRadiusKm = 6371
+  const toRad = (degrees) => degrees * Math.PI / 180
+
+  const dLat = toRad(bLat - aLat)
+  const dLon = toRad(bLon - aLon)
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(aLat)) *
+    Math.cos(toRad(bLat)) *
+    Math.sin(dLon / 2) ** 2
+
+  return earthRadiusKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
+function placeDistanceKm(place, userLocation) {
+  if (!userLocation || place?.latitude == null || place?.longitude == null) return null
+  return haversineKm(
+    userLocation.latitude,
+    userLocation.longitude,
+    place.latitude,
+    place.longitude,
+  )
+}
+
+function formatDistance(distanceKm, t) {
+  if (distanceKm == null) return null
+  if (distanceKm < 1) return `${Math.max(10, Math.round(distanceKm * 1000 / 10) * 10)} ${t.meters}`
+  return `${distanceKm < 10 ? distanceKm.toFixed(1) : Math.round(distanceKm)} ${t.km}`
+}
+
+function sortPlaces(items, userLocation) {
+  return [...items].sort((a, b) => {
+    const aOpen = isOpenNow(a)
+    const bOpen = isOpenNow(b)
+
+    if (aOpen !== bOpen) {
+      if (aOpen === true) return -1
+      if (bOpen === true) return 1
+      if (aOpen === null) return -1
+      if (bOpen === null) return 1
+    }
+
+    if (userLocation) {
+      const aDistance = placeDistanceKm(a, userLocation)
+      const bDistance = placeDistanceKm(b, userLocation)
+
+      if (aDistance != null && bDistance != null) return aDistance - bDistance
+      if (aDistance != null) return -1
+      if (bDistance != null) return 1
+    }
+
+    return 0
+  })
+}
+
 function openExternal(url) {
   if (!url) return
   const tg = window.Telegram?.WebApp
@@ -430,6 +506,8 @@ export default function App() {
   const [offers, setOffers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [userLocation, setUserLocation] = useState(null)
+  const [locationState, setLocationState] = useState('idle')
 
   const t = I18N[lang]
 
@@ -463,6 +541,33 @@ export default function App() {
 
     tg.BackButton.hide()
   }, [selectedPlace])
+
+  function requestLocation() {
+    if (!navigator.geolocation) {
+      setLocationState('denied')
+      return
+    }
+
+    setLocationState('loading')
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserLocation({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        })
+        setLocationState('active')
+      },
+      () => {
+        setLocationState('denied')
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000,
+      },
+    )
+  }
 
   async function loadData() {
     setLoading(true)
@@ -502,8 +607,8 @@ export default function App() {
           return aliases.some((alias) => tags.includes(alias))
         })
 
-    return sortOpenFirst(source)
-  }, [places, category])
+    return sortPlaces(source, userLocation)
+  }, [places, category, userLocation])
 
   const openPlacesCount = useMemo(
     () => places.filter((place) => isOpenNow(place) === true).length,
@@ -555,6 +660,7 @@ export default function App() {
           offers={offers.filter((offer) => offer.place_id === selectedPlace.id)}
           lang={lang}
           t={t}
+          userLocation={userLocation}
           onLanguageChange={setLang}
           onBack={() => setSelectedPlace(null)}
         />
@@ -590,9 +696,24 @@ export default function App() {
               {!loading && places.length > 0 && (
                 <div className="open-summary">● {openPlacesCount} {t.openCount}</div>
               )}
-              <button className="primary" onClick={() => setTab('pick')}>
-                {t.pickMe}
-              </button>
+
+              <div className="hero-actions">
+                <button className="primary" onClick={() => setTab('pick')}>
+                  {t.pickMe}
+                </button>
+
+                <button
+                  className={`location-action ${locationState === 'active' ? 'active' : ''}`}
+                  onClick={requestLocation}
+                >
+                  📍 {locationState === 'active' ? t.locationActive : t.nearMe}
+                </button>
+              </div>
+
+              {locationState === 'denied' && (
+                <div className="location-hint">{t.locationDenied}</div>
+              )}
+
             </section>
 
             {error && (
@@ -686,6 +807,7 @@ export default function App() {
                       place={place}
                       lang={lang}
                       t={t}
+                      userLocation={userLocation}
                       onClick={() => openPlace(place)}
                     />
                   ))}
@@ -705,6 +827,7 @@ export default function App() {
             loading={loading}
             lang={lang}
             t={t}
+            userLocation={userLocation}
             onOpen={openPlace}
           />
         )}
@@ -715,6 +838,7 @@ export default function App() {
             placesById={placesById}
             lang={lang}
             t={t}
+            userLocation={userLocation}
             onOpen={openPlace}
           />
         )}
@@ -724,6 +848,7 @@ export default function App() {
             places={places}
             lang={lang}
             t={t}
+            userLocation={userLocation}
             onOpen={openPlace}
           />
         )}
@@ -749,13 +874,22 @@ export default function App() {
   )
 }
 
-function PlaceRow({ place, lang, t, onClick }) {
+function PlaceRow({ place, lang, t, userLocation, onClick }) {
   const [icon, label] = metaFor(place.category, t)
   const openState = isOpenNow(place)
+  const distance = formatDistance(placeDistanceKm(place, userLocation), t)
 
   return (
     <button className="place place-button" onClick={onClick}>
-      <div className="place-icon">{icon}</div>
+      {place.image_url ? (
+        <div
+          className="place-photo"
+          style={{ backgroundImage: `url("${place.image_url}")` }}
+          aria-hidden="true"
+        />
+      ) : (
+        <div className="place-icon">{icon}</div>
+      )}
 
       <div className="place-body">
         <div className="place-title-line">
@@ -776,6 +910,7 @@ function PlaceRow({ place, lang, t, onClick }) {
           </span>
           <span>📍 {localized(place, 'address', lang) || t.city}</span>
           <span>💰 {formatMoney(place.average_check, lang, t)}</span>
+          {distance && <span>🧭 {distance}</span>}
         </div>
       </div>
 
@@ -784,12 +919,13 @@ function PlaceRow({ place, lang, t, onClick }) {
   )
 }
 
-function PlaceDetails({ place, events, offers, lang, t, onLanguageChange, onBack }) {
+function PlaceDetails({ place, events, offers, lang, t, userLocation, onLanguageChange, onBack }) {
   const [icon, label] = metaFor(place.category, t)
   const instagramUrl = normalizeInstagram(place.instagram)
   const tags = Array.isArray(place.tags) ? place.tags : []
   const placeName = localized(place, 'name', lang)
   const openState = isOpenNow(place)
+  const distance = formatDistance(placeDistanceKm(place, userLocation), t)
 
   return (
     <>
@@ -824,6 +960,7 @@ function PlaceDetails({ place, events, offers, lang, t, onLanguageChange, onBack
             <div className="hero-meta">
               <span>📍 {localized(place, 'address', lang) || t.city}</span>
               <span>💰 {formatMoney(place.average_check, lang, t)}</span>
+              {distance && <span>🧭 {distance}</span>}
             </div>
           </div>
         </section>
@@ -979,15 +1116,15 @@ function PlaceDetails({ place, events, offers, lang, t, onLanguageChange, onBack
   )
 }
 
-function Places({ places, loading, lang, t, onOpen }) {
+function Places({ places, loading, lang, t, userLocation, onOpen }) {
   const [openOnly, setOpenOnly] = useState(true)
 
   const visiblePlaces = useMemo(() => {
     const source = openOnly
       ? places.filter((place) => isOpenNow(place) === true)
       : places
-    return sortOpenFirst(source)
-  }, [places, openOnly])
+    return sortPlaces(source, userLocation)
+  }, [places, openOnly, userLocation])
 
   return (
     <section className="picker places-screen">
@@ -1020,6 +1157,7 @@ function Places({ places, loading, lang, t, onOpen }) {
               place={place}
               lang={lang}
               t={t}
+              userLocation={userLocation}
               onClick={() => onOpen(place)}
             />
           ))}
@@ -1091,7 +1229,7 @@ function Placeholder({ icon, title, text, badge }) {
   )
 }
 
-function Picker({ places, lang, t, onOpen }) {
+function Picker({ places, lang, t, userLocation, onOpen }) {
   const [company, setCompany] = useState('two')
   const [budget, setBudget] = useState('budget2')
   const [result, setResult] = useState(null)
@@ -1116,7 +1254,20 @@ function Picker({ places, lang, t, onOpen }) {
     }
 
     const openPlaces = places.filter((place) => isOpenNow(place) === true)
-    const pool = openPlaces.length ? openPlaces : places
+    let pool = openPlaces.length ? openPlaces : places
+
+    if (userLocation) {
+      const withDistance = pool
+        .map((place) => ({ place, distance: placeDistanceKm(place, userLocation) }))
+        .filter((item) => item.distance != null)
+        .sort((a, b) => a.distance - b.distance)
+
+      if (withDistance.length) {
+        const nearest = withDistance.slice(0, Math.min(5, withDistance.length))
+        pool = nearest.map((item) => item.place)
+      }
+    }
+
     const place = pool[Math.floor(Math.random() * pool.length)]
     setResult(place)
   }

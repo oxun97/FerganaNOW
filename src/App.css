@@ -845,3 +845,62 @@ button {
     font-size: 8px;
   }
 }
+
+
+/* Location + photos + distance */
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.location-action {
+  border: 1px solid rgba(255,255,255,.09);
+  background: #1a1e24;
+  color: #fff;
+  font-weight: 850;
+  border-radius: 14px;
+  padding: 13px 14px;
+  cursor: pointer;
+}
+
+.location-action.active {
+  background: rgba(119,255,172,.12);
+  border-color: rgba(119,255,172,.28);
+  color: #8dffba;
+}
+
+.location-hint {
+  margin-top: 9px;
+  color: #8d939e;
+  font-size: 11px;
+}
+
+.place-photo {
+  flex: 0 0 58px;
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+  background-size: cover;
+  background-position: center;
+  background-color: #20242b;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+}
+
+@media (max-width: 480px) {
+  .hero-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .hero-actions > button {
+    width: 100%;
+  }
+
+  .place-photo {
+    flex-basis: 52px;
+    width: 52px;
+    height: 52px;
+  }
+}
