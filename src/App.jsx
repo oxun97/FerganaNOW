@@ -45,6 +45,10 @@ const I18N = {
     free: 'Бесплатно',
     profile: 'Профиль',
     profileText: 'Здесь будут избранное, история и настройки приложения.',
+    creatorLabel: 'Создатель Fergana NOW',
+    creatorName: 'Oxun.M',
+    creatorText: 'Идея, разработка и развитие проекта.',
+    creatorTelegram: 'Написать в Telegram',
     nextStage: 'MVP • следующий этап',
     navNow: 'Сейчас',
     navPlaces: 'Места',
@@ -175,6 +179,10 @@ const I18N = {
     free: 'Bepul',
     profile: 'Profil',
     profileText: 'Bu yerda sevimlilar, tarix va ilova sozlamalari bo‘ladi.',
+    creatorLabel: 'Fergana NOW yaratuvchisi',
+    creatorName: 'Oxun.M',
+    creatorText: 'Loyiha g‘oyasi, ishlab chiqilishi va rivojlantirilishi.',
+    creatorTelegram: 'Telegram orqali yozish',
     nextStage: 'MVP • keyingi bosqich',
     navNow: 'Hozir',
     navPlaces: 'Joylar',
@@ -902,12 +910,7 @@ export default function App() {
         )}
 
         {tab === 'profile' && (
-          <Placeholder
-            icon="👤"
-            title={t.profile}
-            text={t.profileText}
-            badge={t.nextStage}
-          />
+          <ProfileScreen t={t} />
         )}
       </main>
 
@@ -1522,6 +1525,33 @@ function Nav({ icon, label, active, onClick }) {
       <span>{icon}</span>
       <small>{label}</small>
     </button>
+  )
+}
+
+function ProfileScreen({ t }) {
+  return (
+    <section className="profile-screen">
+      <div className="placeholder-icon">👤</div>
+      <h1>{t.profile}</h1>
+      <p className="profile-intro">{t.profileText}</p>
+
+      <article className="creator-card">
+        <div className="creator-mark">OM</div>
+        <div className="creator-copy">
+          <div className="creator-label">{t.creatorLabel}</div>
+          <div className="creator-name">{t.creatorName}</div>
+          <div className="creator-text">{t.creatorText}</div>
+          <button
+            className="creator-link"
+            onClick={() => openExternal('https://t.me/oxun_uz')}
+          >
+            ✈️ {t.creatorTelegram}
+          </button>
+        </div>
+      </article>
+
+      <div className="pill">{t.nextStage}</div>
+    </section>
   )
 }
 
