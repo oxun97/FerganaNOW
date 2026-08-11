@@ -13,6 +13,7 @@ export default function Header({ lang, t, onLanguageChange, theme, onToggleTheme
           <button className={lang === 'ru' ? 'active' : ''} onClick={() => onLanguageChange('ru')}>RU</button>
           <button className={lang === 'uz' ? 'active' : ''} onClick={() => onLanguageChange('uz')}>UZ</button>
         </div>
+        <div className="location-pill">📍 {t.city}</div>
       </div>
     </header>
   )

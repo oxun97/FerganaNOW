@@ -757,6 +757,20 @@ button {
   color: #07110a;
 }
 
+.location-pill {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .detail-header-copy {
   flex: 1;
   min-width: 0;
