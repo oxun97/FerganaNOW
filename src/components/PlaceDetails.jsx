@@ -12,7 +12,7 @@ import {
   time,
 } from '../lib/placeUtils.js'
 import { supabase, SUPABASE_URL } from '../lib/supabase.js'
-import { openExternal, sharePlace } from '../lib/telegram.js'
+import { haptic, openExternal, sharePlace } from '../lib/telegram.js'
 import { useEffect, useState } from 'react'
 
 export default function PlaceDetails({
@@ -52,23 +52,32 @@ export default function PlaceDetails({
   }
 
   async function submitReview() {
-    if (reviewLoading) return
+    if (reviewLoading || !newReview.comment.trim()) return
     setReviewLoading(true)
-    const userName = telegramUser
-      ? [telegramUser.first_name, telegramUser.last_name].filter(Boolean).join(' ') || telegramUser.username
-      : 'Guest'
+    haptic('light')
+
+    let userName = 'Guest'
+    if (telegramUser) {
+      const full = [telegramUser.first_name, telegramUser.last_name].filter(Boolean).join(' ')
+      userName = full || telegramUser.username || `User ${String(telegramUser.id).slice(-4)}`
+    }
 
     const { error } = await supabase
       .from('reviews')
       .insert([{
         place_id: place.id,
         rating: newReview.rating,
-        comment: newReview.comment,
+        comment: newReview.comment.trim(),
         user_name: userName,
         user_id: telegramUser?.id ? String(telegramUser.id) : null
       }])
 
-    if (!error) {
+    if (error) {
+      console.error('Review error:', error)
+      haptic('error')
+      alert(lang === 'uz' ? 'Xatolik yuz berdi' : 'Произошла ошибка при отправке')
+    } else {
+      haptic('success')
       setNewReview({ rating: 5, comment: '' })
       loadReviews()
     }
