@@ -372,10 +372,11 @@ p { line-height: 1.55; }
 
 @media (max-width: 520px) {
   .main, .detail-main { padding: 13px; }
-  .header { align-items: flex-start; padding-left: 13px; padding-right: 13px; }
-  .header-controls { flex-direction: column-reverse; align-items: flex-end; gap: 5px; }
-  .location-pill { padding: 6px 8px; font-size: 9px; }
-  .language-switch button { min-width: 29px; height: 25px; }
+  .header { align-items: center; padding-left: 13px; padding-right: 13px; }
+  .header-controls { flex-direction: row; align-items: center; gap: 8px; }
+  .location-pill { padding: 6px 10px; font-size: 10px; }
+  .language-switch button { min-width: 28px; height: 26px; font-size: 9px; }
+  .theme-toggle { padding: 4px; font-size: 18px; }
   .hero { padding: 20px; }
   .category-grid { grid-template-columns: repeat(4,minmax(0,1fr)); }
   .category-button { min-height: 78px; padding: 5px; }
