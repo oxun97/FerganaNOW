@@ -8,6 +8,7 @@ import {
 } from '../lib/placeUtils.js'
 import PlaceCard from './PlaceCard.jsx'
 import { SkeletonCard, SkeletonLiveCard } from './Skeleton.jsx'
+import { CREATOR_URL, openTelegram } from '../lib/telegram.js'
 
 export default function HomeScreen({
   places,
