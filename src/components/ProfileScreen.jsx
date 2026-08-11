@@ -78,14 +78,28 @@ export default function ProfileScreen({
       )}
 
       <div className="section-head"><h2>{t.creatorLabel}</h2></div>
-      <article className="creator-card">
-        <div className="creator-mark">OM</div>
+      <article className="creator-card creator-card-personal">
+        <div className="creator-photo" role="img" aria-label={t.creatorName} />
         <div className="creator-copy">
           <div className="creator-label">{t.creatorLabel}</div>
           <div className="creator-name">{t.creatorName}</div>
+          <a
+            className="creator-handle"
+            href={CREATOR_URL}
+            onClick={(event) => {
+              event.preventDefault()
+              openTelegram(CREATOR_URL)
+            }}
+          >
+            @oxun_uz
+          </a>
           <div className="creator-text">{t.creatorText}</div>
-          <button className="creator-link" onClick={() => openTelegram(CREATOR_URL)}>✈️ {t.creatorTelegram}</button>
         </div>
+        <button className="creator-link creator-link-wide" onClick={() => openTelegram(CREATOR_URL)}>
+          <span className="creator-telegram-icon">✈️</span>
+          <span>{t.creatorTelegram}</span>
+          <b>›</b>
+        </button>
       </article>
     </section>
   )

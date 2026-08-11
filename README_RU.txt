@@ -1,5 +1,5 @@
 FERGANA NOW — MVP 1.0 FULL
-Создатель: Oxun.M — https://t.me/oxun_uz
+Создатель: M.OXUN — https://t.me/oxun_uz
 Telegram Mini App: @fergananow_bot
 Production: https://fergana-now.vercel.app
 
@@ -23,7 +23,7 @@ Production: https://fergana-now.vercel.app
 - Telegram-профиль (имя / username / фото, если Mini App открыт внутри Telegram);
 - deep-link конкретного места через @fergananow_bot?startapp=place_ID;
 - кнопка «Поделиться»;
-- автор Oxun.M + кнопка Telegram @oxun_uz;
+- автор M.OXUN + кнопка Telegram @oxun_uz;
 - optional Supabase-синхронизация избранного через anonymous Auth; по умолчанию выключена, а избранное и история надёжно работают локально.
 
 КАК ЗАМЕНИТЬ ПРОЕКТ ОДИН РАЗ
@@ -75,7 +75,7 @@ ENV
 - загружает фото;
 - создаёт акции и события;
 - «есть места сейчас»;
-- модерация Oxun.M;
+- модерация M.OXUN;
 - платное продвижение / поднятие / featured-размещения.
 
 
