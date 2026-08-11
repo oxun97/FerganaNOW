@@ -68,12 +68,23 @@ export default function HomeScreen({
         <p>{t.heroText}</p>
         {!loading && <div className="open-summary">● {openCount} {t.openCount}</div>}
         <div className="hero-actions">
-          <button className="primary" onClick={onOpenPicker}>{t.pickMe}</button>
+          <button className="primary" onClick={onOpenPicker}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
+              <path d="M19 8.5V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3.5"></path>
+              <path d="m19 11-4-4"></path>
+              <path d="m15 11 4-4"></path>
+            </svg>
+            {t.pickMe}
+          </button>
           <button
             className={`secondary ${locationState === 'active' ? 'active' : ''}`}
             onClick={onRequestLocation}
           >
-            {locationState === 'active' ? `📍 ${t.locationActive}` : t.nearMe}
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px', color: '#77ffac' }}>
+              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            {locationState === 'active' ? t.locationActive : t.nearMe}
           </button>
         </div>
         {locationState === 'denied' && <div className="location-hint">{t.locationDenied}</div>}
@@ -82,12 +93,26 @@ export default function HomeScreen({
       <section>
         <div className="section-head"><h2>{t.mood}</h2></div>
         <div className="category-grid">
-          {CATEGORY_KEYS.map(([icon, key]) => (
-            <button className="category-button" key={key} onClick={() => onBrowseCategory(key)}>
-              <span>{icon}</span>
-              <strong>{t[CATEGORY_LABEL_KEY[key]]}</strong>
-            </button>
-          ))}
+          {CATEGORY_KEYS.map(([emoji, key]) => {
+            const icons = {
+              eat: <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2M7 2v20M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />,
+              coffee: <path d="M17 8h1a4 4 0 1 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8Z" />,
+              date: <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />,
+              kids: <><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><circle cx="17" cy="11" r="3"/><path d="M13 21v-1a3 3 0 0 1 3-3h4a3 3 0 0 1 3 3v1"/></>,
+              karaoke: <><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></>,
+              entertainment: <><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></>,
+              night: <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />,
+              today: <><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/><path d="m16 18-2-2 2-2M8 14l2 2-2 2"/></>
+            };
+            return (
+              <button className="category-button" key={key} onClick={() => onBrowseCategory(key)}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#77ffac' }}>
+                  {icons[key]}
+                </svg>
+                <strong>{t[CATEGORY_LABEL_KEY[key]]}</strong>
+              </button>
+            )
+          })}
         </div>
       </section>
 
