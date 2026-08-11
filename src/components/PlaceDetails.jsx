@@ -179,7 +179,8 @@ export default function PlaceDetails({
               {[1, 2, 3, 4, 5].map(star => (
                 <button
                   key={star}
-                  className={newReview.rating >= star ? 'star active' : 'star'}
+                  type="button"
+                  className={`star-btn ${newReview.rating >= star ? 'active' : ''}`}
                   onClick={() => setNewReview({ ...newReview, rating: star })}
                 >★</button>
               ))}
@@ -189,8 +190,13 @@ export default function PlaceDetails({
               value={newReview.comment}
               onChange={e => setNewReview({ ...newReview, comment: e.target.value })}
             />
-            <button className="primary small-button" onClick={submitReview} disabled={reviewLoading}>
-              {lang === 'uz' ? 'Yuborish' : 'Отправить'}
+            <button
+              className="primary full-width"
+              style={{ marginTop: '10px' }}
+              onClick={submitReview}
+              disabled={reviewLoading || !newReview.comment.trim()}
+            >
+              {reviewLoading ? t.loading : (lang === 'uz' ? 'Yuborish' : 'Отправить отзыв')}
             </button>
           </div>
 
@@ -199,7 +205,7 @@ export default function PlaceDetails({
               <div key={review.id} className="review-item">
                 <div className="review-header">
                   <strong>{review.user_name}</strong>
-                  <div className="stars">
+                  <div className="stars-display">
                     {[1, 2, 3, 4, 5].map(star => (
                       <span key={star} style={{ color: review.rating >= star ? '#77ffac' : '#2c313a' }}>★</span>
                     ))}
