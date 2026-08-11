@@ -40,7 +40,9 @@ body.light-theme .caption {
 }
 
 /* Keep Hero section readable (Stay Dark) */
-.hero, .hero h1, .hero p, .hero .eyebrow, .hero .open-summary {
+.hero, .hero h1, .hero p, .hero .eyebrow, .hero .open-summary,
+body.light-theme .hero h1, body.light-theme .hero p,
+body.light-theme .hero .eyebrow, body.light-theme .hero .open-summary {
   color: #ffffff !important;
 }
 body.light-theme .hero {
