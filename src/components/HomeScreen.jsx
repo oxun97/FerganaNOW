@@ -40,21 +40,22 @@ export default function HomeScreen({
       title: localized(event, 'title', lang),
       subtitle: localized(placesById[event.place_id], 'name', lang) || t.city,
       placeId: event.place_id,
+      image: event.image_url,
       meta: `${dtTime(event.starts_at, lang)}${event.ends_at ? `–${dtTime(event.ends_at, lang)}` : ''}`,
       badge: activityBadge(event.starts_at, event.ends_at, lang, t),
-      note: localized(event, 'description', lang) || t.eventToday,
+      note: localized(event, 'description', lang),
     })),
     ...offers.map((offer) => ({
       id: `offer-${offer.id}`,
       kind: 'offer',
       icon: '🔥',
       label: t.offer,
-      title: localized(placesById[offer.place_id], 'name', lang) || t.city,
-      subtitle: localized(offer, 'title', lang),
+      title: localized(offer, 'title', lang),
+      subtitle: localized(placesById[offer.place_id], 'name', lang) || t.city,
       placeId: offer.place_id,
       meta: offer.ends_at ? `${t.until} ${dtTime(offer.ends_at, lang)}` : t.today,
       badge: offer.discount_percent ? `−${offer.discount_percent}%` : t.offer.toUpperCase(),
-      note: localized(offer, 'description', lang) || localized(offer, 'title', lang),
+      note: localized(offer, 'description', lang),
     })),
   ].slice(0, 10)
 
@@ -108,7 +109,9 @@ export default function HomeScreen({
                 <h3>{item.title}</h3>
                 <div className="muted">{item.subtitle}</div>
                 <div className="muted">{item.meta}</div>
-                <div className="live-note">● {item.note}</div>
+                {item.note && item.note !== item.title && (
+                  <div className="live-note">● {item.note}</div>
+                )}
                 <button className="small-button">{t.details}</button>
               </article>
             ))}

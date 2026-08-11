@@ -218,14 +218,14 @@ body.light-theme {
   border-color: var(--accent) !important;
 }
 .description-preview {
-  display: -webkit-box !important;
-  -webkit-line-clamp: 3 !important;
-  -webkit-box-orient: vertical !important;
+  display: block !important;
   overflow: hidden !important;
+  text-overflow: ellipsis !important;
   white-space: pre-wrap !important;
   word-break: break-word !important;
   line-height: 1.5 !important;
   font-size: 13px !important;
   margin: 6px 0 !important;
   color: var(--text-muted) !important;
+  max-height: 4.5em !important; /* Примерно 3 строки */
 }
