@@ -199,12 +199,19 @@ export default function PlaceDetails({
               <div key={review.id} className="review-item">
                 <div className="review-header">
                   <strong>{review.user_name}</strong>
-                  <span className="stars">{'★'.repeat(review.rating)}</span>
+                  <div className="stars">
+                    {[1, 2, 3, 4, 5].map(star => (
+                      <span key={star} style={{ color: review.rating >= star ? '#77ffac' : '#2c313a' }}>★</span>
+                    ))}
+                  </div>
                 </div>
                 <p>{review.comment}</p>
-                <small className="muted">{new Date(review.created_at).toLocaleDateString()}</small>
+                <small>{new Date(review.created_at).toLocaleDateString(lang === 'uz' ? 'uz-UZ' : 'ru-RU', { day: 'numeric', month: 'long' })}</small>
               </div>
             ))}
+            {reviews.length === 0 && <div className="empty-card" style={{ background: 'transparent', border: '1px dashed rgba(255,255,255,0.05)' }}>
+              {lang === 'uz' ? 'Hozircha sharhlar yo\'q. Birinchi bo\'ling!' : 'Отзывов пока нет. Будьте первым!'}
+            </div>}
           </div>
         </section>
       </main>
