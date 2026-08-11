@@ -7,6 +7,7 @@ import {
   matchesTag,
   sortPlaces,
 } from '../lib/placeUtils.js'
+import { haptic } from '../lib/telegram.js'
 import PlaceCard from './PlaceCard.jsx'
 import { SkeletonCard } from './Skeleton.jsx'
 
