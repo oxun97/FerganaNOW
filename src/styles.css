@@ -141,20 +141,67 @@ body.light-theme .sync-state {
   color: #6b7280 !important;
 }
 
-body.light-theme .sync-state.on {
-  color: #00b341 !important;
-}
-
-body.light-theme .creator-write-btn {
-  color: #ffffff !important;
-}
-
-body.light-theme .creator-write-btn svg {
-  color: #ffffff !important;
-}
-
 body.light-theme .skeleton {
   background: linear-gradient(90deg, #f0f2f5 25%, #e1e4e8 50%, #f0f2f5 75%) !important;
+}
+
+/* Place Details Fixes for Light Theme */
+body.light-theme .detail-header {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-bottom-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+body.light-theme .detail-header-copy strong {
+  color: #111827 !important;
+}
+
+body.light-theme .back-button {
+  background: #f0f2f5 !important;
+  color: #111827 !important;
+  border-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+body.light-theme .detail-secondary-actions button {
+  background: #ffffff !important;
+  color: #374151 !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+body.light-theme .detail-secondary-actions button.active {
+  background: rgba(0, 179, 65, 0.05) !important;
+  color: #00b341 !important;
+  border-color: rgba(0, 179, 65, 0.2) !important;
+}
+
+body.light-theme .contact-grid button {
+  background: #ffffff !important;
+  color: #111827 !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+body.light-theme .info-row {
+  border-bottom-color: rgba(0, 0, 0, 0.05) !important;
+  color: #4b5563 !important;
+}
+
+body.light-theme .info-row strong {
+  color: #111827 !important;
+}
+
+body.light-theme .detail-description {
+  color: #374151 !important;
+}
+
+body.light-theme .tag-row span {
+  background: #f0f2f5 !important;
+  border-color: rgba(0, 0, 0, 0.05) !important;
+  color: #4b5563 !important;
+}
+
+body.light-theme .detail-card {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
 }
 
 /* --- Base styles below --- */
