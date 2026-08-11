@@ -1,6 +1,6 @@
 export const I18N = {
   ru: {
-    city: 'Фергана • Кувасай',
+    city: 'Фергана',
     subtitle: 'Ваш гид по городу прямо сейчас',
     home: 'Сейчас',
     places: 'Места',
@@ -126,7 +126,7 @@ export const I18N = {
     budgetHigh: '300+ тыс.',
   },
   uz: {
-    city: 'Farg‘ona • Quvasoy',
+    city: 'Farg‘ona',
     subtitle: 'Shahardagi yo‘lboshchingiz',
     home: 'Hozir',
     places: 'Joylar',
