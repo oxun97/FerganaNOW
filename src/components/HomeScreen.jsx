@@ -131,21 +131,26 @@ export default function HomeScreen({
           <div className="horizontal-scroll">
             {liveItems.map((item) => (
               <article className="live-card" key={item.id} onClick={() => onOpenPlace(item.placeId)}>
-                <div className="live-content">
+                <div className="live-header-row">
                   {item.image && (
                     <div className="live-thumb" style={{ backgroundImage: `url("${item.image.startsWith('http') ? item.image : `https://xqpfrmsounqbhyiwutrg.supabase.co/storage/v1/object/public/rasmlar/${item.image}`}")` }} />
                   )}
-                  <div className="live-info">
-                    <div className="live-top"><span>{item.icon} {item.label}</span><b>{item.badge}</b></div>
+                  <div className="live-main-info">
+                    <div className="live-top" style={{ marginBottom: '8px' }}>
+                      <span>{item.icon} {item.label}</span>
+                      <b>{item.badge}</b>
+                    </div>
                     <h3>{item.title}</h3>
                     <div className="muted">{item.subtitle}</div>
-                    <div className="muted small-meta">{item.meta}</div>
-                    {item.note && item.note !== item.title && (
-                      <div className="live-note clamp-2">● {item.note}</div>
-                    )}
+                    <div className="muted" style={{ fontSize: '11px', marginTop: '4px' }}>{item.meta}</div>
                   </div>
                 </div>
-                <button className="small-button full-width-btn">{t.details}</button>
+                {item.note && item.note !== item.title && (
+                  <div className="live-note-box clamp-2">
+                    ● {item.note}
+                  </div>
+                )}
+                <button className="primary small-button" style={{ width: '100%', marginTop: '12px' }}>{t.details}</button>
               </article>
             ))}
           </div>
