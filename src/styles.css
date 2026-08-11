@@ -108,6 +108,53 @@ body.light-theme .location-pill {
   color: #1a1d21 !important;
 }
 
+/* Fix visibility for profile elements in light theme */
+body.light-theme .creator-card-personal {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04) !important;
+}
+
+body.light-theme .creator-name,
+body.light-theme .creator-text,
+body.light-theme .creator-label {
+  color: #111827 !important;
+}
+
+body.light-theme .creator-handle {
+  color: #00b341 !important;
+}
+
+body.light-theme .compact-history button {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  color: #111827 !important;
+}
+
+body.light-theme .compact-history button b {
+  color: #6b7280 !important;
+}
+
+body.light-theme .sync-state {
+  color: #6b7280 !important;
+}
+
+body.light-theme .sync-state.on {
+  color: #00b341 !important;
+}
+
+body.light-theme .creator-write-btn {
+  color: #ffffff !important;
+}
+
+body.light-theme .creator-write-btn svg {
+  color: #ffffff !important;
+}
+
+body.light-theme .skeleton {
+  background: linear-gradient(90deg, #f0f2f5 25%, #e1e4e8 50%, #f0f2f5 75%) !important;
+}
+
 /* --- Base styles below --- */
 * { box-sizing: border-box; }
 html { background: var(--bg); scroll-behavior: smooth; }
