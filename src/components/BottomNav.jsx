@@ -3,7 +3,6 @@ const items = [
   ['places', '📍', 'places'],
   ['map', '🗺️', 'map'],
   ['today', '🎉', 'today'],
-  ['pick', '🎲', 'pick'],
   ['profile', '👤', 'profile'],
 ]
 

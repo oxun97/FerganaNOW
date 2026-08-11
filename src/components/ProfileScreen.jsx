@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import PlaceCard from './PlaceCard.jsx'
 import { CREATOR_URL, openTelegram } from '../lib/telegram.js'
 
@@ -15,12 +16,28 @@ export default function ProfileScreen({
   onOpenAddPlace,
   onOpenAdmin,
 }) {
+  const clickData = useRef({ count: 0, last: 0 })
   const favoritePlaces = favoriteIds.map((id) => placesById[id]).filter(Boolean)
   const historyPlaces = historyIds.map((id) => placesById[id]).filter(Boolean)
 
   const displayName = telegramUser
     ? [telegramUser.first_name, telegramUser.last_name].filter(Boolean).join(' ')
     : t.guest
+
+  function handleAdminClick() {
+    const now = Date.now()
+    if (now - clickData.current.last > 2000) {
+      clickData.current.count = 1
+    } else {
+      clickData.current.count++
+    }
+    clickData.current.last = now
+
+    if (clickData.current.count >= 5) {
+      clickData.current.count = 0
+      onOpenAdmin()
+    }
+  }
 
   return (
     <section className="screen-section profile-screen">
@@ -87,7 +104,7 @@ export default function ProfileScreen({
 
       <div className="section-head"><h2>{t.creatorLabel}</h2></div>
       <article className="creator-card creator-card-personal">
-        <div className="creator-photo" role="img" aria-label={t.creatorName} onClick={onOpenAdmin} />
+        <div className="creator-photo" role="img" aria-label={t.creatorName} onClick={handleAdminClick} />
         <div className="creator-copy">
           <div className="creator-label">{t.creatorLabel}</div>
           <div className="creator-name">{t.creatorName}</div>
