@@ -1,98 +1,101 @@
 import { useEffect, useMemo, useState } from 'react'
 import './App.css'
+import { supabase } from './supabase'
 
 const categories = [
-  ['🍽', 'Поесть'],
-  ['☕', 'Кофе'],
-  ['❤️', 'Вдвоём'],
-  ['👨‍👩‍👧', 'С детьми'],
-  ['🎤', 'Караоке'],
-  ['🎮', 'Развлечения'],
-  ['🌙', 'Ночью'],
-  ['🎉', 'Сегодня'],
+  ['🍽', 'Поесть'], ['☕', 'Кофе'], ['❤️', 'Вдвоём'], ['👨‍👩‍👧', 'С детьми'],
+  ['🎤', 'Караоке'], ['🎮', 'Развлечения'], ['🌙', 'Ночью'], ['🎉', 'Сегодня'],
 ]
 
-const places = [
-  {
-    name: 'Giotto',
-    icon: '🍝',
-    type: 'Итальянская кухня',
-    status: 'Открыто до 00:00',
-    price: '150–250 тыс. сум',
-    distance: '1,7 км',
-    tags: ['Поесть', 'Вдвоём', 'Сегодня'],
-  },
-  {
-    name: 'Coffee Boom',
-    icon: '☕',
-    type: 'Кофе • десерты',
-    status: 'Открыто до 23:30',
-    price: '50–120 тыс. сум',
-    distance: '2,1 км',
-    tags: ['Кофе', 'Вдвоём', 'Сегодня'],
-  },
-  {
-    name: 'Royal Hall',
-    icon: '🎤',
-    type: 'Караоке • lounge',
-    status: 'Открыто до 03:00',
-    price: '120–300 тыс. сум',
-    distance: '2,9 км',
-    tags: ['Караоке', 'Развлечения', 'Ночью', 'Сегодня'],
-  },
-  {
-    name: 'Family Park',
-    icon: '🎡',
-    type: 'Для детей • развлечения',
-    status: 'Открыто до 22:00',
-    price: '40–150 тыс. сум',
-    distance: '3,2 км',
-    tags: ['С детьми', 'Развлечения', 'Сегодня'],
-  },
-]
+const categoryMeta = {
+  restaurant: ['🍽', 'Ресторан'],
+  cafe: ['☕', 'Кафе'],
+  coffee: ['☕', 'Кофейня'],
+  karaoke: ['🎤', 'Караоке'],
+  entertainment: ['🎮', 'Развлечения'],
+  kids: ['🎡', 'Для детей'],
+  bar: ['🍸', 'Бар'],
+}
 
-const live = [
-  {
-    icon: '🎵',
-    label: 'Живая музыка',
-    title: 'Giotto',
-    meta: 'Сегодня • 20:00–23:00',
-    badge: 'ИДЁТ СЕЙЧАС',
-    note: 'Есть свободные столики',
-  },
-  {
-    icon: '🔥',
-    label: 'Акция',
-    title: 'Coffee Boom',
-    meta: 'До 23:30',
-    badge: '−20%',
-    note: 'На десерты после 21:00',
-  },
-  {
-    icon: '🎤',
-    label: 'Караоке',
-    title: 'Royal Hall',
-    meta: 'Старт через 35 минут',
-    badge: 'СКОРО',
-    note: 'Вход свободный до 22:00',
-  },
-]
+const metaFor = (category) => categoryMeta[category] || ['📍', 'Место']
+const time = (value) => value ? value.slice(0, 5) : ''
+const money = (value) => value ? `${new Intl.NumberFormat('ru-RU').format(value)} сум` : 'Цена не указана'
+const dtTime = (value) => value ? new Intl.DateTimeFormat('ru-RU', {hour:'2-digit', minute:'2-digit'}).format(new Date(value)) : ''
+
+function activityBadge(start, end) {
+  const now = Date.now()
+  const s = start ? new Date(start).getTime() : 0
+  const e = end ? new Date(end).getTime() : Infinity
+  if (s > now) {
+    const minutes = Math.max(1, Math.round((s - now) / 60000))
+    return minutes < 120 ? `через ${minutes} мин` : `в ${dtTime(start)}`
+  }
+  if (s <= now && e >= now) return 'ИДЁТ СЕЙЧАС'
+  return 'СЕГОДНЯ'
+}
 
 export default function App() {
   const [tab, setTab] = useState('now')
   const [category, setCategory] = useState(null)
+  const [places, setPlaces] = useState([])
+  const [events, setEvents] = useState([])
+  const [offers, setOffers] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     const tg = window.Telegram?.WebApp
-    if (!tg) return
-    tg.ready()
-    tg.expand()
+    if (tg) { tg.ready(); tg.expand() }
+    loadData()
   }, [])
+
+  async function loadData() {
+    setLoading(true)
+    setError('')
+    const [p, e, o] = await Promise.all([
+      supabase.from('places').select('*').eq('is_active', true).order('id'),
+      supabase.from('events').select('*').eq('is_active', true).order('starts_at'),
+      supabase.from('offers').select('*').eq('is_active', true).order('starts_at'),
+    ])
+    const err = p.error || e.error || o.error
+    if (err) {
+      console.error(err)
+      setError(err.message)
+    } else {
+      setPlaces(p.data || [])
+      setEvents(e.data || [])
+      setOffers(o.data || [])
+    }
+    setLoading(false)
+  }
+
+  const placesById = useMemo(
+    () => Object.fromEntries(places.map(p => [p.id, p])),
+    [places],
+  )
 
   const filteredPlaces = useMemo(() => {
     if (!category) return places
-    return places.filter((place) => place.tags.includes(category))
-  }, [category])
+    return places.filter(p => Array.isArray(p.tags) && p.tags.includes(category))
+  }, [places, category])
+
+  const liveItems = useMemo(() => [
+    ...events.map(e => ({
+      id: `event-${e.id}`, icon: '🎵', label: 'Событие', title: e.title,
+      place: placesById[e.place_id]?.name || 'Фергана',
+      meta: `${dtTime(e.starts_at)}${e.ends_at ? `–${dtTime(e.ends_at)}` : ''}`,
+      badge: activityBadge(e.starts_at, e.ends_at),
+      note: e.description || 'Событие сегодня',
+    })),
+    ...offers.map(o => ({
+      id: `offer-${o.id}`, icon: '🔥', label: 'Акция',
+      title: placesById[o.place_id]?.name || 'Фергана',
+      place: o.title,
+      meta: o.ends_at ? `до ${dtTime(o.ends_at)}` : 'сегодня',
+      badge: o.discount_percent ? `−${o.discount_percent}%` : 'АКЦИЯ',
+      note: o.description || o.title,
+    })),
+  ].slice(0, 8), [events, offers, placesById])
 
   return (
     <div className="app">
@@ -105,210 +108,172 @@ export default function App() {
       </header>
 
       <main className="main">
-        {tab === 'now' && (
-          <>
-            <section className="hero">
-              <div className="eyebrow">ФЕРГАНА • ПРЯМО СЕЙЧАС</div>
-              <h1>Что будем делать?</h1>
-              <p>Места, события и акции, которыми можно воспользоваться уже сегодня.</p>
-              <button className="primary" onClick={() => setTab('pick')}>
-                🎲 Реши за меня
-              </button>
-            </section>
+        {tab === 'now' && <>
+          <section className="hero">
+            <div className="eyebrow">ФЕРГАНА • ПРЯМО СЕЙЧАС</div>
+            <h1>Что будем делать?</h1>
+            <p>Места, события и акции из настоящей базы Fergana NOW.</p>
+            <button className="primary" onClick={() => setTab('pick')}>🎲 Реши за меня</button>
+          </section>
 
-            <section>
-              <div className="section-head">
-                <h2>Выбери настроение</h2>
-                {category && (
-                  <button className="text-button" onClick={() => setCategory(null)}>
-                    Сбросить
-                  </button>
-                )}
-              </div>
+          {error && <section className="result">
+            <div className="eyebrow">ОШИБКА</div>
+            <h2>Не удалось получить данные</h2>
+            <p>{error}</p>
+            <button className="primary" onClick={loadData}>Повторить</button>
+          </section>}
 
-              <div className="category-grid">
-                {categories.map(([icon, label]) => (
-                  <button
-                    key={label}
-                    className={`category ${category === label ? 'selected' : ''}`}
-                    onClick={() => setCategory(label)}
-                  >
-                    <span>{icon}</span>
-                    <strong>{label}</strong>
-                  </button>
-                ))}
-              </div>
-            </section>
+          <section>
+            <div className="section-head">
+              <h2>Выбери настроение</h2>
+              {category && <button className="text-button" onClick={() => setCategory(null)}>Сбросить</button>}
+            </div>
+            <div className="category-grid">
+              {categories.map(([icon,label]) => (
+                <button key={label}
+                  className={`category ${category === label ? 'selected' : ''}`}
+                  onClick={() => setCategory(label)}>
+                  <span>{icon}</span><strong>{label}</strong>
+                </button>
+              ))}
+            </div>
+          </section>
 
-            <section>
-              <div className="section-head">
-                <h2>🔥 Интересно сейчас</h2>
-                <button className="text-button">Все</button>
-              </div>
-
-              <div className="live-row">
-                {live.map((item) => (
-                  <article className="live-card" key={item.title + item.label}>
-                    <div className="live-top">
-                      <span>{item.icon} {item.label}</span>
-                      <b>{item.badge}</b>
-                    </div>
+          <section>
+            <div className="section-head">
+              <h2>🔥 Интересно сейчас</h2>
+              <button className="text-button" onClick={loadData}>Обновить</button>
+            </div>
+            {loading ? <div className="muted">Загрузка…</div> :
+              liveItems.length ? <div className="live-row">
+                {liveItems.map(item => (
+                  <article className="live-card" key={item.id}>
+                    <div className="live-top"><span>{item.icon} {item.label}</span><b>{item.badge}</b></div>
                     <h3>{item.title}</h3>
+                    <div className="muted">{item.place}</div>
                     <div className="muted">{item.meta}</div>
                     <div className="live-note">● {item.note}</div>
-                    <div className="card-actions">
-                      <button>Подробнее</button>
-                      <button className="ghost">Маршрут</button>
-                    </div>
+                    <div className="card-actions"><button>Подробнее</button><button className="ghost">Маршрут</button></div>
                   </article>
                 ))}
-              </div>
-            </section>
+              </div> : <div className="muted">Пока нет активных событий и акций.</div>}
+          </section>
 
-            <section>
-              <div className="section-head">
-                <h2>{category ? `Места: ${category}` : 'Рядом с вами'}</h2>
-                <button className="text-button" onClick={() => setTab('places')}>
-                  Все места
-                </button>
-              </div>
-
+          <section>
+            <div className="section-head">
+              <h2>{category ? `Места: ${category}` : 'Места Ферганы'}</h2>
+              <button className="text-button" onClick={() => setTab('places')}>Все места</button>
+            </div>
+            {loading ? <div className="muted">Загрузка…</div> :
               <div className="place-list">
-                {filteredPlaces.map((place) => (
-                  <article className="place" key={place.name}>
-                    <div className="place-icon">{place.icon}</div>
+                {filteredPlaces.map(place => {
+                  const [icon,label] = metaFor(place.category)
+                  return <article className="place" key={place.id}>
+                    <div className="place-icon">{icon}</div>
                     <div className="place-body">
                       <h3>{place.name}</h3>
-                      <div className="muted">{place.type}</div>
+                      <div className="muted">{place.description || label}</div>
                       <div className="place-meta">
-                        <span>🟢 {place.status}</span>
-                        <span>📍 {place.distance}</span>
-                        <span>💰 {place.price}</span>
+                        <span>🕐 {place.close_time ? `до ${time(place.close_time)}` : 'график уточняется'}</span>
+                        <span>📍 {place.address || 'Фергана'}</span>
+                        <span>💰 {money(place.average_check)}</span>
                       </div>
                     </div>
                     <button className="arrow">›</button>
                   </article>
-                ))}
-              </div>
-            </section>
-          </>
-        )}
+                })}
+                {!filteredPlaces.length && !error && <div className="muted">В этой категории пока нет мест.</div>}
+              </div>}
+          </section>
+        </>}
 
-        {tab === 'places' && (
-          <Placeholder
-            icon="📍"
-            title="Места"
-            text="Здесь будет каталог заведений с фильтрами: открыто сейчас, рядом, недорого, для свидания и с детьми."
-          />
-        )}
-
-        {tab === 'today' && (
-          <Placeholder
-            icon="🎉"
-            title="Сегодня"
-            text="Здесь будет лента мероприятий по времени. Прошедшие события будут автоматически скрываться."
-          />
-        )}
-
-        {tab === 'pick' && <Picker />}
-
-        {tab === 'profile' && (
-          <Placeholder
-            icon="👤"
-            title="Профиль"
-            text="Позже здесь будут избранные места, история и переключатель RU / UZ."
-          />
-        )}
+        {tab === 'places' && <Places places={places} loading={loading} />}
+        {tab === 'today' && <Today events={events} placesById={placesById} />}
+        {tab === 'pick' && <Picker places={places} />}
+        {tab === 'profile' && <Placeholder icon="👤" title="Профиль"
+          text="Позже здесь будут избранное, история и переключатель RU / UZ." />}
       </main>
 
       <nav className="bottom-nav">
-        <NavItem icon="⚡" label="Сейчас" active={tab === 'now'} onClick={() => setTab('now')} />
-        <NavItem icon="📍" label="Места" active={tab === 'places'} onClick={() => setTab('places')} />
-        <NavItem icon="🎉" label="Сегодня" active={tab === 'today'} onClick={() => setTab('today')} />
-        <NavItem icon="🎲" label="Куда пойти" active={tab === 'pick'} onClick={() => setTab('pick')} />
-        <NavItem icon="👤" label="Профиль" active={tab === 'profile'} onClick={() => setTab('profile')} />
+        <Nav icon="⚡" label="Сейчас" active={tab==='now'} onClick={() => setTab('now')} />
+        <Nav icon="📍" label="Места" active={tab==='places'} onClick={() => setTab('places')} />
+        <Nav icon="🎉" label="Сегодня" active={tab==='today'} onClick={() => setTab('today')} />
+        <Nav icon="🎲" label="Куда пойти" active={tab==='pick'} onClick={() => setTab('pick')} />
+        <Nav icon="👤" label="Профиль" active={tab==='profile'} onClick={() => setTab('profile')} />
       </nav>
     </div>
   )
 }
 
-function NavItem({ icon, label, active, onClick }) {
-  return (
-    <button className={`nav-item ${active ? 'active' : ''}`} onClick={onClick}>
-      <span>{icon}</span>
-      <small>{label}</small>
-    </button>
-  )
+function Places({ places, loading }) {
+  return <section className="picker">
+    <div className="placeholder-icon">📍</div><h1>Места</h1>
+    <p>Все активные места загружаются из Supabase.</p>
+    {loading ? <div className="muted">Загрузка…</div> :
+      <div className="place-list">{places.map(place => {
+        const [icon,label] = metaFor(place.category)
+        return <article className="place" key={place.id}>
+          <div className="place-icon">{icon}</div>
+          <div className="place-body"><h3>{place.name}</h3>
+            <div className="muted">{place.description || label}</div>
+            <div className="place-meta"><span>📍 {place.address || 'Фергана'}</span><span>💰 {money(place.average_check)}</span></div>
+          </div>
+        </article>
+      })}</div>}
+  </section>
+}
+
+function Today({ events, placesById }) {
+  return <section className="picker">
+    <div className="placeholder-icon">🎉</div><h1>Сегодня</h1>
+    <p>События из базы данных Fergana NOW.</p>
+    <div className="place-list">
+      {events.map(event => <article className="place" key={event.id}>
+        <div className="place-icon">🎵</div>
+        <div className="place-body"><h3>{event.title}</h3>
+          <div className="muted">{placesById[event.place_id]?.name || 'Фергана'}</div>
+          <div className="place-meta"><span>🕐 {dtTime(event.starts_at)}</span>{event.price===0 && <span>🎟 Бесплатно</span>}</div>
+        </div>
+      </article>)}
+      {!events.length && <div className="muted">На сегодня событий пока нет.</div>}
+    </div>
+  </section>
+}
+
+function Nav({ icon, label, active, onClick }) {
+  return <button className={`nav-item ${active ? 'active' : ''}`} onClick={onClick}>
+    <span>{icon}</span><small>{label}</small>
+  </button>
 }
 
 function Placeholder({ icon, title, text }) {
-  return (
-    <section className="placeholder">
-      <div className="placeholder-icon">{icon}</div>
-      <h1>{title}</h1>
-      <p>{text}</p>
-      <div className="pill">MVP • следующий этап</div>
-    </section>
-  )
+  return <section className="placeholder">
+    <div className="placeholder-icon">{icon}</div><h1>{title}</h1><p>{text}</p>
+    <div className="pill">MVP • следующий этап</div>
+  </section>
 }
 
-function Picker() {
-  const [company, setCompany] = useState('Вдвоём')
-  const [budget, setBudget] = useState('100–300 тыс.')
-  const [result, setResult] = useState(null)
-
+function Picker({ places }) {
+  const [company,setCompany] = useState('Вдвоём')
+  const [budget,setBudget] = useState('100–300 тыс.')
+  const [result,setResult] = useState(null)
   const choose = () => {
-    const variants = [
-      ['Ужин + кофе', 'Giotto → Coffee Boom', '≈ 220 000 сум'],
-      ['Караоке-вечер', 'Royal Hall', '≈ 180 000 сум'],
-      ['Прогулка + десерт', 'Центр Ферганы → Coffee Boom', '≈ 90 000 сум'],
-    ]
-    setResult(variants[Math.floor(Math.random() * variants.length)])
+    if (!places.length) return setResult(['Пока нет вариантов','Добавь места в Supabase',''])
+    const place = places[Math.floor(Math.random()*places.length)]
+    setResult([place.name, place.description || 'Вариант на сегодня', money(place.average_check)])
   }
-
-  return (
-    <section className="picker">
-      <div className="placeholder-icon">🎲</div>
-      <h1>Реши за меня</h1>
-      <p>Два ответа — и Fergana NOW предложит готовый вариант на вечер.</p>
-
-      <h3>Кто идёт?</h3>
-      <div className="chips">
-        {['Один', 'Вдвоём', 'С друзьями', 'С детьми'].map((value) => (
-          <button
-            key={value}
-            className={`chip ${company === value ? 'active' : ''}`}
-            onClick={() => setCompany(value)}
-          >
-            {value}
-          </button>
-        ))}
-      </div>
-
-      <h3>Бюджет</h3>
-      <div className="chips">
-        {['до 100 тыс.', '100–300 тыс.', '300+ тыс.'].map((value) => (
-          <button
-            key={value}
-            className={`chip ${budget === value ? 'active' : ''}`}
-            onClick={() => setBudget(value)}
-          >
-            {value}
-          </button>
-        ))}
-      </div>
-
-      <button className="primary full" onClick={choose}>Подобрать вариант</button>
-
-      {result && (
-        <div className="result">
-          <div className="eyebrow">ВАШ ВАРИАНТ</div>
-          <h2>{result[0]}</h2>
-          <p>{result[1]}</p>
-          <strong>{result[2]}</strong>
-          <div className="muted">Для: {company} • бюджет: {budget}</div>
-        </div>
-      )}
-    </section>
-  )
+  return <section className="picker">
+    <div className="placeholder-icon">🎲</div><h1>Реши за меня</h1>
+    <p>Теперь выбор идёт из реальной базы мест.</p>
+    <h3>Кто идёт?</h3>
+    <div className="chips">{['Один','Вдвоём','С друзьями','С детьми'].map(v =>
+      <button key={v} className={`chip ${company===v?'active':''}`} onClick={() => setCompany(v)}>{v}</button>)}</div>
+    <h3>Бюджет</h3>
+    <div className="chips">{['до 100 тыс.','100–300 тыс.','300+ тыс.'].map(v =>
+      <button key={v} className={`chip ${budget===v?'active':''}`} onClick={() => setBudget(v)}>{v}</button>)}</div>
+    <button className="primary full" onClick={choose}>Подобрать вариант</button>
+    {result && <div className="result"><div className="eyebrow">ВАШ ВАРИАНТ</div>
+      <h2>{result[0]}</h2><p>{result[1]}</p>{result[2] && <strong>{result[2]}</strong>}
+      <div className="muted">Для: {company} • бюджет: {budget}</div></div>}
+  </section>
 }
