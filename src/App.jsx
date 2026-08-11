@@ -49,6 +49,12 @@ const I18N = {
     creatorName: 'Oxun.M',
     creatorText: 'Идея, разработка и развитие проекта.',
     creatorTelegram: 'Написать в Telegram',
+    favoritesTitle: 'Избранное',
+    favoritesEmpty: 'Сохраняй понравившиеся места — они появятся здесь.',
+    addFavorite: 'В избранное',
+    removeFavorite: 'Убрать из избранного',
+    sharePlace: 'Поделиться',
+    sharedPlaceText: 'Посмотри это место в Fergana NOW',
     nextStage: 'MVP • следующий этап',
     navNow: 'Сейчас',
     navPlaces: 'Места',
@@ -183,6 +189,12 @@ const I18N = {
     creatorName: 'Oxun.M',
     creatorText: 'Loyiha g‘oyasi, ishlab chiqilishi va rivojlantirilishi.',
     creatorTelegram: 'Telegram orqali yozish',
+    favoritesTitle: 'Sevimlilar',
+    favoritesEmpty: 'Yoqtirgan joylaringizni saqlang — ular shu yerda ko‘rinadi.',
+    addFavorite: 'Sevimlilarga',
+    removeFavorite: 'Sevimlilardan olib tashlash',
+    sharePlace: 'Ulashish',
+    sharedPlaceText: 'Bu joyni Fergana NOW’da ko‘ring',
     nextStage: 'MVP • keyingi bosqich',
     navNow: 'Hozir',
     navPlaces: 'Joylar',
@@ -320,6 +332,15 @@ const CATEGORY_LABEL_KEY = {
   entertainment: 'tagEntertainment',
   night: 'tagNight',
   today: 'tagToday',
+}
+
+function initialFavorites() {
+  try {
+    const saved = JSON.parse(window.localStorage.getItem('ferganaNowFavorites') || '[]')
+    return Array.isArray(saved) ? saved.map(String) : []
+  } catch {
+    return []
+  }
 }
 
 function initialLanguage() {
@@ -562,6 +583,7 @@ export default function App() {
   const [error, setError] = useState('')
   const [userLocation, setUserLocation] = useState(null)
   const [locationState, setLocationState] = useState('idle')
+  const [favoriteIds, setFavoriteIds] = useState(initialFavorites)
 
   const t = I18N[lang]
 
@@ -578,6 +600,10 @@ export default function App() {
     window.localStorage.setItem('ferganaNowLanguage', lang)
     document.documentElement.lang = lang
   }, [lang])
+
+  useEffect(() => {
+    window.localStorage.setItem('ferganaNowFavorites', JSON.stringify(favoriteIds))
+  }, [favoriteIds])
 
   useEffect(() => {
     const tg = window.Telegram?.WebApp
@@ -694,6 +720,24 @@ export default function App() {
     })),
   ].slice(0, 8), [events, offers, placesById, lang, t])
 
+  function isFavorite(placeId) {
+    return favoriteIds.includes(String(placeId))
+  }
+
+  function toggleFavorite(placeId) {
+    const id = String(placeId)
+    setFavoriteIds((current) => (
+      current.includes(id)
+        ? current.filter((item) => item !== id)
+        : [...current, id]
+    ))
+  }
+
+  const favoritePlaces = useMemo(
+    () => places.filter((place) => favoriteIds.includes(String(place.id))),
+    [places, favoriteIds],
+  )
+
   function openPlace(placeOrId) {
     const place = typeof placeOrId === 'object'
       ? placeOrId
@@ -715,6 +759,8 @@ export default function App() {
           lang={lang}
           t={t}
           userLocation={userLocation}
+          isFavorite={isFavorite(selectedPlace.id)}
+          onToggleFavorite={() => toggleFavorite(selectedPlace.id)}
           onLanguageChange={setLang}
           onBack={() => setSelectedPlace(null)}
         />
@@ -862,6 +908,8 @@ export default function App() {
                       lang={lang}
                       t={t}
                       userLocation={userLocation}
+                      isFavorite={isFavorite(place.id)}
+                      onToggleFavorite={() => toggleFavorite(place.id)}
                       onClick={() => openPlace(place)}
                     />
                   ))}
@@ -884,6 +932,8 @@ export default function App() {
             userLocation={userLocation}
             locationState={locationState}
             onRequestLocation={requestLocation}
+            isFavorite={isFavorite}
+            onToggleFavorite={toggleFavorite}
             onOpen={openPlace}
           />
         )}
@@ -910,7 +960,14 @@ export default function App() {
         )}
 
         {tab === 'profile' && (
-          <ProfileScreen t={t} />
+          <ProfileScreen
+            t={t}
+            lang={lang}
+            favoritePlaces={favoritePlaces}
+            userLocation={userLocation}
+            onOpen={openPlace}
+            onToggleFavorite={toggleFavorite}
+          />
         )}
       </main>
 
@@ -925,13 +982,21 @@ export default function App() {
   )
 }
 
-function PlaceRow({ place, lang, t, userLocation, onClick }) {
+function PlaceRow({ place, lang, t, userLocation, isFavorite = false, onToggleFavorite, onClick }) {
   const [icon, label] = metaFor(place.category, t)
   const openState = isOpenNow(place)
   const distance = formatDistance(placeDistanceKm(place, userLocation), t)
 
   return (
-    <button className="place place-button" onClick={onClick}>
+    <div
+      className="place place-button"
+      role="button"
+      tabIndex={0}
+      onClick={onClick}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') onClick()
+      }}
+    >
       {place.image_url ? (
         <div
           className="place-photo"
@@ -965,18 +1030,45 @@ function PlaceRow({ place, lang, t, userLocation, onClick }) {
         </div>
       </div>
 
+      {onToggleFavorite && (
+        <button
+          className={`favorite-button ${isFavorite ? 'active' : ''}`}
+          aria-label={isFavorite ? t.removeFavorite : t.addFavorite}
+          title={isFavorite ? t.removeFavorite : t.addFavorite}
+          onClick={(event) => {
+            event.stopPropagation()
+            onToggleFavorite()
+          }}
+        >
+          {isFavorite ? '♥' : '♡'}
+        </button>
+      )}
+
       <span className="arrow">›</span>
-    </button>
+    </div>
   )
 }
 
-function PlaceDetails({ place, events, offers, lang, t, userLocation, onLanguageChange, onBack }) {
+function PlaceDetails({ place, events, offers, lang, t, userLocation, isFavorite, onToggleFavorite, onLanguageChange, onBack }) {
   const [icon, label] = metaFor(place.category, t)
   const instagramUrl = normalizeInstagram(place.instagram)
   const tags = Array.isArray(place.tags) ? place.tags : []
   const placeName = localized(place, 'name', lang)
   const openState = isOpenNow(place)
   const distance = formatDistance(placeDistanceKm(place, userLocation), t)
+
+  function sharePlace() {
+    const appUrl = 'https://t.me/fergananow_bot?startapp'
+    const text = `${t.sharedPlaceText}: ${placeName} 📍`
+    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(appUrl)}&text=${encodeURIComponent(text)}`
+    const tg = window.Telegram?.WebApp
+
+    if (tg?.openTelegramLink) {
+      tg.openTelegramLink(shareUrl)
+    } else {
+      openExternal(shareUrl)
+    }
+  }
 
   return (
     <>
@@ -1029,6 +1121,19 @@ function PlaceDetails({ place, events, offers, lang, t, userLocation, onLanguage
               {t.call}
             </button>
           )}
+        </div>
+
+        <div className="detail-quick-actions">
+          <button
+            className={`quick-action ${isFavorite ? 'active' : ''}`}
+            onClick={onToggleFavorite}
+          >
+            {isFavorite ? '♥' : '♡'} {isFavorite ? t.removeFavorite : t.addFavorite}
+          </button>
+
+          <button className="quick-action" onClick={sharePlace}>
+            ↗ {t.sharePlace}
+          </button>
         </div>
 
         {tags.length > 0 && (
@@ -1175,6 +1280,8 @@ function Places({
   userLocation,
   locationState,
   onRequestLocation,
+  isFavorite,
+  onToggleFavorite,
   onOpen,
 }) {
   const [query, setQuery] = useState('')
@@ -1464,6 +1571,8 @@ function Places({
               lang={lang}
               t={t}
               userLocation={userLocation}
+              isFavorite={isFavorite(place.id)}
+              onToggleFavorite={() => onToggleFavorite(place.id)}
               onClick={() => onOpen(place)}
             />
           ))}
@@ -1528,12 +1637,48 @@ function Nav({ icon, label, active, onClick }) {
   )
 }
 
-function ProfileScreen({ t }) {
+function ProfileScreen({
+  t,
+  lang,
+  favoritePlaces,
+  userLocation,
+  onOpen,
+  onToggleFavorite,
+}) {
   return (
     <section className="profile-screen">
       <div className="placeholder-icon">👤</div>
       <h1>{t.profile}</h1>
       <p className="profile-intro">{t.profileText}</p>
+
+      <div className="profile-section">
+        <div className="section-head compact">
+          <h2>♥ {t.favoritesTitle}</h2>
+          <span className="favorites-count">{favoritePlaces.length}</span>
+        </div>
+
+        {favoritePlaces.length ? (
+          <div className="place-list">
+            {favoritePlaces.map((place) => (
+              <PlaceRow
+                key={place.id}
+                place={place}
+                lang={lang}
+                t={t}
+                userLocation={userLocation}
+                isFavorite
+                onToggleFavorite={() => onToggleFavorite(place.id)}
+                onClick={() => onOpen(place)}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="favorites-empty">
+            <div>♡</div>
+            <span>{t.favoritesEmpty}</span>
+          </div>
+        )}
+      </div>
 
       <article className="creator-card">
         <div className="creator-mark">OM</div>
@@ -1543,14 +1688,17 @@ function ProfileScreen({ t }) {
           <div className="creator-text">{t.creatorText}</div>
           <button
             className="creator-link"
-            onClick={() => openExternal('https://t.me/oxun_uz')}
+            onClick={() => {
+              const tg = window.Telegram?.WebApp
+              const url = 'https://t.me/oxun_uz'
+              if (tg?.openTelegramLink) tg.openTelegramLink(url)
+              else openExternal(url)
+            }}
           >
             ✈️ {t.creatorTelegram}
           </button>
         </div>
       </article>
-
-      <div className="pill">{t.nextStage}</div>
     </section>
   )
 }
