@@ -347,6 +347,7 @@ export default function AdminScreen({ onBack, lang, t }) {
                 </div>
                 <div className="req-body">
                   {item.address && <div>📍 {item.address}</div>}
+                  {item.views !== undefined && <div>👁 {item.views} просмотров</div>}
                   {item.phone && <div>📞 {item.phone}</div>}
                   {item.open_time && item.close_time && <div>🕐 {item.open_time} – {item.close_time}</div>}
                   {item.starts_at && <div>🕒 {new Date(item.starts_at).toLocaleString()}</div>}

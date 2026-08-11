@@ -173,10 +173,14 @@ export default function App() {
     if (cloudUserId) setCloudFavorite(cloudUserId, id, enabled)
   }
 
-  function openPlace(placeOrId) {
+  async function openPlace(placeOrId) {
     haptic('selection')
     const id = String(typeof placeOrId === 'object' ? placeOrId.id : placeOrId)
     if (!placesById[id]) return
+
+    // Увеличиваем счетчик просмотров в базе (анонимно и быстро)
+    supabase.rpc('increment_place_views', { row_id: parseInt(id) }).then()
+
     setSelectedPlaceId(id)
     setHistoryIds((current) => [id, ...current.filter((item) => item !== id)].slice(0, 20))
     if (cloudUserId) pushHistory(cloudUserId, id)
