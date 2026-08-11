@@ -187,25 +187,6 @@ export default function App() {
     ? offers.filter((offer) => String(offer.place_id) === String(selectedPlace.id))
     : []
 
-  if (selectedPlace) {
-    return (
-      <div className="app">
-        <PlaceDetails
-          place={selectedPlace}
-          events={selectedEvents}
-          offers={selectedOffers}
-          lang={lang}
-          t={t}
-          userLocation={userLocation}
-          telegramUser={telegramUser}
-          favorite={isFavorite(selectedPlace.id)}
-          onFavorite={() => toggleFavorite(selectedPlace.id)}
-          onBack={() => setSelectedPlaceId(null)}
-        />
-      </div>
-    )
-  }
-
   return (
     <div className="app">
       <Header lang={lang} t={t} onLanguageChange={setLang} />
@@ -219,110 +200,127 @@ export default function App() {
           </div>
         )}
 
-        {tab === 'home' && (
-          <HomeScreen
-            places={places}
-            events={events}
-            offers={offers}
-            placesById={placesById}
-            lang={lang}
-            t={t}
-            loading={loading}
-            userLocation={userLocation}
-            locationState={locationState}
-            onRequestLocation={requestLocation}
-            isFavorite={isFavorite}
-            onFavorite={toggleFavorite}
-            onOpenPlace={openPlace}
-            onBrowseCategory={browseCategory}
-            onOpenPlaces={() => switchTab('places')}
-            onOpenPicker={() => switchTab('pick')}
-            onReload={loadData}
-          />
-        )}
-
-        {tab === 'places' && (
-          <PlacesScreen
-            places={places}
-            lang={lang}
-            t={t}
-            loading={loading}
-            userLocation={userLocation}
-            locationState={locationState}
-            onRequestLocation={requestLocation}
-            presetCategory={placesPreset.category}
-            presetVersion={placesPreset.version}
-            isFavorite={isFavorite}
-            onFavorite={toggleFavorite}
-            onOpenPlace={openPlace}
-          />
-        )}
-
-        {tab === 'map' && (
-          <MapScreen
-            places={places}
+        {selectedPlace ? (
+          <PlaceDetails
+            place={selectedPlace}
+            events={selectedEvents}
+            offers={selectedOffers}
             lang={lang}
             t={t}
             userLocation={userLocation}
-            locationState={locationState}
-            onRequestLocation={requestLocation}
-            onOpenPlace={openPlace}
-          />
-        )}
-
-        {tab === 'today' && (
-          <TodayScreen
-            events={events}
-            offers={offers}
-            placesById={placesById}
-            lang={lang}
-            t={t}
-            onOpenPlace={openPlace}
-          />
-        )}
-
-        {tab === 'pick' && (
-          <PickerScreen
-            places={places}
-            lang={lang}
-            t={t}
-            userLocation={userLocation}
-            onRequestLocation={requestLocation}
-            onOpenPlace={openPlace}
-          />
-        )}
-
-        {tab === 'profile' && (
-          <ProfileScreen
             telegramUser={telegramUser}
-            placesById={placesById}
-            favoriteIds={favoriteIds}
-            historyIds={historyIds}
-            lang={lang}
-            t={t}
-            userLocation={userLocation}
-            cloudEnabled={Boolean(cloudUserId)}
-            onFavorite={toggleFavorite}
-            onOpenPlace={openPlace}
-            onOpenAddPlace={() => setTab('add-place')}
-            onOpenAdmin={() => setTab('admin')}
+            favorite={isFavorite(selectedPlace.id)}
+            onFavorite={() => toggleFavorite(selectedPlace.id)}
+            onBack={() => setSelectedPlaceId(null)}
           />
-        )}
+        ) : (
+          <>
+            {tab === 'home' && (
+              <HomeScreen
+                places={places}
+                events={events}
+                offers={offers}
+                placesById={placesById}
+                lang={lang}
+                t={t}
+                loading={loading}
+                userLocation={userLocation}
+                locationState={locationState}
+                onRequestLocation={requestLocation}
+                isFavorite={isFavorite}
+                onFavorite={toggleFavorite}
+                onOpenPlace={openPlace}
+                onBrowseCategory={browseCategory}
+                onOpenPlaces={() => switchTab('places')}
+                onOpenPicker={() => switchTab('pick')}
+                onReload={loadData}
+              />
+            )}
 
-        {tab === 'add-place' && (
-          <AddPlaceScreen
-            lang={lang}
-            t={t}
-            onBack={() => setTab('profile')}
-          />
-        )}
+            {tab === 'places' && (
+              <PlacesScreen
+                places={places}
+                lang={lang}
+                t={t}
+                loading={loading}
+                userLocation={userLocation}
+                locationState={locationState}
+                onRequestLocation={requestLocation}
+                presetCategory={placesPreset.category}
+                presetVersion={placesPreset.version}
+                isFavorite={isFavorite}
+                onFavorite={toggleFavorite}
+                onOpenPlace={openPlace}
+              />
+            )}
 
-        {tab === 'admin' && (
-          <AdminScreen
-            lang={lang}
-            t={t}
-            onBack={() => setTab('profile')}
-          />
+            {tab === 'map' && (
+              <MapScreen
+                places={places}
+                lang={lang}
+                t={t}
+                userLocation={userLocation}
+                locationState={locationState}
+                onRequestLocation={requestLocation}
+                onOpenPlace={openPlace}
+              />
+            )}
+
+            {tab === 'today' && (
+              <TodayScreen
+                events={events}
+                offers={offers}
+                placesById={placesById}
+                lang={lang}
+                t={t}
+                onOpenPlace={openPlace}
+              />
+            )}
+
+            {tab === 'pick' && (
+              <PickerScreen
+                places={places}
+                lang={lang}
+                t={t}
+                userLocation={userLocation}
+                onRequestLocation={requestLocation}
+                onOpenPlace={openPlace}
+              />
+            )}
+
+            {tab === 'profile' && (
+              <ProfileScreen
+                telegramUser={telegramUser}
+                placesById={placesById}
+                favoriteIds={favoriteIds}
+                historyIds={historyIds}
+                lang={lang}
+                t={t}
+                userLocation={userLocation}
+                cloudEnabled={Boolean(cloudUserId)}
+                onFavorite={toggleFavorite}
+                onOpenPlace={openPlace}
+                onOpenAddPlace={() => setTab('add-place')}
+                onOpenAdmin={() => setTab('admin')}
+              />
+            )}
+
+            {tab === 'add-place' && (
+              <AddPlaceScreen
+                lang={lang}
+                t={t}
+                onBack={() => setTab('profile')}
+              />
+            )}
+
+            {tab === 'admin' && (
+              <AdminScreen
+                lang={lang}
+                t={t}
+                onBack={() => setTab('profile')}
+              />
+            )}
+          </>
         )}
       </main>
 

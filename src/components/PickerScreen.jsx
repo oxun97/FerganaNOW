@@ -42,8 +42,10 @@ function companyMatches(place, company) {
 }
 
 function rankPlaces(places, company, budget, interest, userLocation) {
-  const open = places.filter((place) => isOpenNow(place) === true)
-  const base = open.length ? open : places
+  // Фильтруем: оставляем только те, что точно открыты (true) или где график не указан (null)
+  // Исключаем только те, что точно закрыты (false)
+  const available = places.filter((place) => isOpenNow(place) !== false)
+  const base = available.length ? available : places
 
   return base.map((place) => {
     let score = 0
@@ -133,9 +135,15 @@ export default function PickerScreen({ places, lang, t, userLocation, onRequestL
           <div className="picker-result-meta">
             <span>💰 {formatMoney(current.place.average_check, lang, t)}</span>
             {current.distance != null && <span>🧭 {formatDistance(current.distance, t)}</span>}
-            <span>● {isOpenNow(current.place) === true ? t.openNow : t.scheduleUnknown}</span>
+            <span>● {isOpenNow(current.place) === true ? t.openNow : (isOpenNow(current.place) === false ? t.closedNow : t.scheduleUnknown)}</span>
           </div>
-          <div className="result-reason"><strong>{t.whyFits}:</strong> {t.openAndFits}</div>
+          <div className="result-reason">
+            <strong>{t.whyFits}:</strong> {
+              isOpenNow(current.place) === true
+                ? t.openAndFits
+                : (lang === 'uz' ? 'Tanlangan shartlarga mos keladi' : 'Подходит под выбранные условия')
+            }
+          </div>
           <div className="picker-result-actions">
             <button className="small-button" onClick={(event) => { event.stopPropagation(); another() }}>{t.another}</button>
             <button className="small-button light" onClick={() => onOpenPlace(current.place.id)}>{t.details}</button>
