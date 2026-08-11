@@ -257,15 +257,15 @@ p { line-height: 1.55; }
 .filter-pill { flex: 0 0 auto; border: 1px solid var(--line); border-radius: 999px; padding: 9px 11px; background: var(--panel); color: #c4c8ce; font-size: 11px; font-weight: 800; cursor: pointer; }
 .filter-pill.active, .chip.active, .segmented button.active { background: rgba(119,255,172,.12); border-color: rgba(119,255,172,.25); color: var(--accent); }
 .muted-button { color: #858b94; }
-.filter-block { margin-top: 17px; }
-.filter-label { margin-bottom: 8px; color: #8d949d; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; }
-.chips { display: flex; flex-wrap: wrap; gap: 7px; }
-.horizontal-chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
-.chip { flex: 0 0 auto; border: 1px solid var(--line); border-radius: 999px; padding: 9px 11px; background: var(--panel); color: #d7dade; font-size: 11px; cursor: pointer; }
-.segmented { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--panel); border: 1px solid var(--line); }
-.segmented.wide { width: 100%; margin-bottom: 5px; }
-.segmented button { border: 0; border-radius: 999px; padding: 9px 11px; background: transparent; color: #858c96; font-size: 11px; font-weight: 800; cursor: pointer; }
-.segmented.wide button { flex: 1; }
+.filter-block { margin-top: 20px; }
+.filter-label { margin-bottom: 10px; color: #8d949d; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: .1em; padding-left: 2px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.horizontal-chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; padding-top: 2px; }
+.chip { flex: 0 0 auto; border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; background: var(--panel); color: #d7dade; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; transition: all 0.2s; }
+.chip.active { background: rgba(119,255,172,.12); border-color: rgba(119,255,172,.3); color: var(--accent); transform: translateY(-1px); }
+.segmented { display: flex; padding: 4px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); width: 100%; }
+.segmented button { flex: 1; border: 0; border-radius: 10px; padding: 10px; background: transparent; color: #858c96; font-size: 12px; font-weight: 800; cursor: pointer; transition: all 0.2s; }
+.segmented button.active { background: #242932; color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
 .top-gap { margin-top: 18px; }
 
 .event-card, .offer-card { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 19px; background: var(--panel); border: 1px solid var(--line); cursor: pointer; }
